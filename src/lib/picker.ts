@@ -29,6 +29,13 @@ export namespace NodePickerValue {
   export interface WorkflowTemplate extends NodePickerValue {
     type: "workflowTemplate";
     steps: WorkflowStep[];
+    metadata?: {
+      name: string;
+      description: string;
+      difficulty: string;
+      estimated_time: string;
+      example_prompts?: string[];
+    };
   }
 
   export interface SavedWorkflow extends NodePickerValue {
@@ -61,6 +68,41 @@ export namespace NodePickerValue {
   }
 }
 
+// Helper function to extract templates from new categorized structure
+function extractTemplatesFromCategories(): Record<string, any> {
+  const extractedTemplates: Record<string, any> = {};
+  
+  // Handle new categorized structure
+  if (templates.categories) {
+    // Extract from universal templates
+    if (templates.categories.universal?.subcategories) {
+      for (const [subcatKey, subcategory] of Object.entries(templates.categories.universal.subcategories)) {
+        if (subcategory.templates) {
+          for (const [templateKey, templateData] of Object.entries(subcategory.templates)) {
+            const displayName = `${templateData.metadata.name} (${subcategory.name.replace(/📸|🖼️|🔍|📦/g, '').trim()})`;
+            extractedTemplates[displayName] = {
+              ...templateData.workflow,
+              metadata: templateData.metadata
+            };
+          }
+        }
+      }
+    }
+    
+    // Extract legacy templates for compatibility
+    if (templates.categories.legacy?.templates) {
+      for (const [templateKey, templateData] of Object.entries(templates.categories.legacy.templates)) {
+        extractedTemplates[templateKey] = templateData;
+      }
+    }
+  } else {
+    // Fallback to old flat structure
+    return templates as Record<string, any>;
+  }
+  
+  return extractedTemplates;
+}
+
 export function createPickerTree(
   library: DeepReadonly<NodeLibrary>,
   savedWorkflows: DeepReadonly<WorkflowMetadata[]> = []
@@ -78,20 +120,83 @@ export function createPickerTree(
           },
         ]),
       },
-      "Workflow Template": {
-        subtrees: {},
-        leaves: R.mapValues(templates, (template) => ({
-          type: "workflowTemplate",
-          steps: template,
-        })),
-      },
     },
     leaves: {},
   };
 
+  // Handle new categorized template structure
+  if (templates.categories?.universal?.subcategories) {
+    // Create categorized template structure
+    const templateTree: PickerTree<NodePickerValue> = {
+      subtrees: {},
+      leaves: {},
+    };
+
+    // Add Universal Templates with subcategories
+    for (const [subcatKey, subcategory] of Object.entries(templates.categories.universal.subcategories)) {
+      if (subcategory.templates) {
+        const subcategoryTree: PickerTree<NodePickerValue> = {
+          subtrees: {},
+          leaves: {},
+        };
+
+        for (const [templateKey, templateData] of Object.entries(subcategory.templates)) {
+          const difficultyIcon = templateData.metadata.difficulty === 'beginner' ? '⭐' : 
+                                templateData.metadata.difficulty === 'intermediate' ? '⭐⭐' : '⭐⭐⭐';
+          
+          const displayName = `${templateData.metadata.name} ${difficultyIcon}`;
+          
+          subcategoryTree.leaves[displayName] = {
+            type: "workflowTemplate",
+            steps: templateData.workflow,
+            metadata: {
+              name: templateData.metadata.name,
+              description: templateData.metadata.description,
+              difficulty: templateData.metadata.difficulty,
+              estimated_time: templateData.metadata.estimated_time,
+              example_prompts: templateData.metadata.example_prompts,
+            },
+          };
+        }
+
+        templateTree.subtrees[subcategory.name] = subcategoryTree;
+      }
+    }
+
+    pickerTree.subtrees["✅ Universal Templates"] = templateTree;
+
+    // Add legacy templates if they exist
+    if (templates.categories.legacy?.templates) {
+      const legacyTemplates: Record<string, NodePickerValue> = {};
+      
+      for (const [templateKey, templateData] of Object.entries(templates.categories.legacy.templates)) {
+        legacyTemplates[`${templateKey} (Legacy)`] = {
+          type: "workflowTemplate",
+          steps: Array.isArray(templateData) ? templateData : [],
+        };
+      }
+
+      pickerTree.subtrees["📚 Legacy Templates"] = {
+        subtrees: {},
+        leaves: legacyTemplates,
+      };
+    }
+  } else {
+    // Fallback to old flat structure
+    const extractedTemplates = extractTemplatesFromCategories();
+    pickerTree.subtrees["Workflow Template"] = {
+      subtrees: {},
+      leaves: R.mapValues(extractedTemplates, (template) => ({
+        type: "workflowTemplate",
+        steps: Array.isArray(template) ? template : template.workflow || template,
+        metadata: template.metadata,
+      })),
+    };
+  }
+
   // Add saved workflows section if there are any
   if (savedWorkflows.length > 0) {
-    pickerTree.subtrees["My Workflows"] = {
+    pickerTree.subtrees["📁 My Workflows"] = {
       subtrees: {},
       leaves: R.mapToObj(savedWorkflows, (workflow) => [
         workflow.name,
