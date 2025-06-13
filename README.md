@@ -68,6 +68,87 @@ The installation scripts will check for these automatically:
 <img src="https://github.com/virtaava/comfywebv2/blob/master/docs/Screenshot%202025-06-13%20125055.png" width="360px"/>
 <img src="https://github.com/virtaava/comfywebv2/blob/master/docs/Screenshot%202025-06-13%20125107.png" width="360px"/>
 
+## 🎮 How to Use ComfyWeb v2
+
+### **Interface Overview**
+
+**Left Panel - Workflow Editor:**
+- **Workflow Tab**: Create and edit your workflow steps
+- **Manage Tab**: Configure server settings and export workflows
+
+**Center Panel - Gallery:**
+- **Generated Images**: View your created images
+- **Queue Status**: See generation progress in real-time
+- **Image Actions**: 
+  - 📁 **Import Icon** (left): Load the workflow used to generate this image
+  - 🗑️ **Trash Icon** (right): Delete this image from gallery
+
+**Right Panel - Generated Results:**
+- **Image Grid**: All your generated images
+- **Click to Enlarge**: View images in full screen
+- **Workflow Recovery**: Click the import icon to restore exact settings
+
+### **Getting Started**
+
+1. **Choose a Template:**
+   - Click the **"Add"** dropdown
+   - Select **"✅ Universal Templates"**
+   - Pick a category (Text to Image, Image to Image, etc.)
+   - Choose a template (⭐ = beginner friendly)
+
+2. **Customize Your Workflow:**
+   - Modify prompts in text areas
+   - Adjust settings (steps, CFG, sampler)
+   - Upload images for img2img workflows
+   - See image previews automatically
+
+3. **Generate Images:**
+   - Click the **"Generate"** button
+   - Watch progress in the gallery
+   - Images appear automatically when complete
+
+4. **Reuse Successful Workflows:**
+   - Click the **📁 import icon** on any generated image
+   - Your workflow will reload with those exact settings
+   - Modify and generate variations
+
+### **Template Categories**
+
+**📸 Text to Image (Beginner ⭐):**
+- **SDXL Basic**: Modern, high-quality generation
+- **SD 1.5 Classic**: Compatible with older GPUs
+- **SDXL + LoRA**: Style enhancement (requires LoRA files)
+
+**🖼️ Image to Image (Beginner ⭐):**
+- **SDXL img2img**: Transform existing images
+- **SD 1.5 img2img**: Classic image transformation
+- **Basic Inpainting** (Intermediate ⭐⭐): Fill masked areas
+
+**🔍 Upscaling & Enhancement:**
+- **Simple 4x Upscale** (Beginner ⭐): Quick enhancement
+- **Latent Upscale** (Intermediate ⭐⭐): AI-powered quality improvement
+
+**📦 Batch Processing:**
+- **Batch Generation**: Create multiple variations
+
+### **Workflow Persistence**
+- **Session Storage**: Your workflow automatically saves during browser session
+- **Manual Save**: Use "Save workflow" in Manage tab for permanent storage
+- **Auto-Restore**: Reload your browser - your work is preserved!
+
+### **Pro Tips**
+
+**For Best Results:**
+- Start with beginner templates (⭐) and experiment
+- Use the import icon to learn from successful generations
+- Save workflows you like using the "Save workflow" button
+- Adjust CFG (7-8 for most cases) and steps (20-30) for quality vs speed
+
+**Troubleshooting:**
+- If templates don't load: Check ComfyUI is running with CORS enabled
+- If images don't appear: Verify server address in Manage tab
+- If upload fails: Ensure image files are PNG, JPG, or WebP format
+
 ## 🛠️ Manual Installation (Advanced Users)
 
 If you prefer to install manually or customize the setup:
@@ -98,7 +179,7 @@ python main.py --enable-cors-header "*"
 # Open comfywebv2/dist/index.html in your browser
 ```
 
-## 🎮 Usage
+## 🎯 Daily Usage
 
 ### **First Time Setup:**
 1. Run the installer script for your platform
@@ -140,6 +221,9 @@ comfywebv2/
 - ✅ **One-click installers** for Windows and Linux/macOS
 - ✅ **Complete automation** - installs ComfyUI + ComfyWeb v2
 - ✅ **Launch scripts** for easy daily usage
+- ✅ **Comprehensive template library** - 11 professional templates
+- ✅ **Image preview system** - See uploaded images in workflows
+- ✅ **Session persistence** - Work survives browser refresh
 - ✅ Fixed critical drag & drop workflow loading bug
 - ✅ Added local workflow storage system  
 - ✅ Implemented missing node detection UI
@@ -171,6 +255,11 @@ comfywebv2/
 - Install appropriate PyTorch version for your GPU
 - NVIDIA: Use CUDA index URL in the installer
 - AMD: Use ROCm version of PyTorch
+
+**Images don't show previews:**
+- Ensure image files are PNG, JPG, JPEG, or WebP format
+- Check that ComfyUI can access the image files
+- Verify file paths are correct
 
 ## 🙏 Acknowledgments
 - Original ComfyWeb by [@jac3km4](https://github.com/jac3km4/comfyweb)
