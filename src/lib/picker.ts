@@ -163,7 +163,7 @@ export function createPickerTree(
       }
     }
 
-    pickerTree.subtrees["✅ Universal Templates"] = templateTree;
+    pickerTree.subtrees["Universal Templates"] = templateTree;
 
     // Add legacy templates if they exist
     if (templates.categories.legacy?.templates) {
