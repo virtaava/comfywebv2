@@ -31,9 +31,74 @@ export const library: Readable<DeepReadonly<NodeLibrary>> =
     });
   });
 
-export const gallery: Writable<Record<string, GalleryItem>> = writable({});
+// Enhanced session-persistent gallery store
+function createSessionGalleryStore() {
+  const SESSION_KEY = 'comfyweb_gallery_session';
+  
+  // Try to restore from sessionStorage
+  let initialValue: Record<string, GalleryItem> = {};
+  try {
+    const saved = sessionStorage.getItem(SESSION_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && typeof parsed === 'object') {
+        initialValue = parsed;
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to restore gallery from session:', error);
+  }
 
-// Session-persistent workflow store
+  const { subscribe, set, update } = writable<Record<string, GalleryItem>>(initialValue);
+
+  return {
+    subscribe,
+    set: (value: Record<string, GalleryItem>) => {
+      // Save to sessionStorage on every change
+      try {
+        if (Object.keys(value).length > 0) {
+          sessionStorage.setItem(SESSION_KEY, JSON.stringify(value));
+        } else {
+          sessionStorage.removeItem(SESSION_KEY);
+        }
+      } catch (error) {
+        if (error.name === 'QuotaExceededError') {
+          console.warn('Session storage quota exceeded. Clearing gallery data.');
+          sessionStorage.removeItem(SESSION_KEY);
+        } else {
+          console.warn('Failed to save gallery to session:', error);
+        }
+      }
+      set(value);
+    },
+    update: (updater: (value: Record<string, GalleryItem>) => Record<string, GalleryItem>) => {
+      update((current) => {
+        const newValue = updater(current);
+        // Save to sessionStorage with quota handling
+        try {
+          if (Object.keys(newValue).length > 0) {
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify(newValue));
+          } else {
+            sessionStorage.removeItem(SESSION_KEY);
+          }
+        } catch (error) {
+          if (error.name === 'QuotaExceededError') {
+            console.warn('Session storage quota exceeded. Clearing gallery data.');
+            sessionStorage.removeItem(SESSION_KEY);
+            // Continue with the update anyway
+          } else {
+            console.warn('Failed to save gallery to session:', error);
+          }
+        }
+        return newValue;
+      });
+    }
+  };
+}
+
+export const gallery = createSessionGalleryStore();
+
+// Enhanced session-persistent workflow store
 function createSessionWorkflowStore() {
   const SESSION_KEY = 'comfyweb_workflow_session';
   
@@ -56,30 +121,56 @@ function createSessionWorkflowStore() {
   return {
     subscribe,
     set: (value: WorkflowItem[]) => {
-      // Save to sessionStorage on every change
+      // Save to sessionStorage with enhanced error handling
       try {
-        if (value.length > 0) {
+        if (value && Array.isArray(value) && value.length > 0) {
           sessionStorage.setItem(SESSION_KEY, JSON.stringify(value));
         } else {
           sessionStorage.removeItem(SESSION_KEY);
         }
       } catch (error) {
-        console.warn('Failed to save workflow to session:', error);
+        if (error.name === 'QuotaExceededError') {
+          console.warn('Session storage quota exceeded. Clearing workflow data.');
+          sessionStorage.removeItem(SESSION_KEY);
+          // Try again after clearing
+          try {
+            if (value && value.length > 0) {
+              sessionStorage.setItem(SESSION_KEY, JSON.stringify(value));
+            }
+          } catch (retryError) {
+            console.error('Failed to save workflow even after clearing storage:', retryError);
+          }
+        } else {
+          console.warn('Failed to save workflow to session:', error);
+        }
       }
       set(value);
     },
     update: (updater: (value: WorkflowItem[]) => WorkflowItem[]) => {
       update((current) => {
         const newValue = updater(current);
-        // Save to sessionStorage
+        // Save to sessionStorage with enhanced error handling
         try {
-          if (newValue.length > 0) {
+          if (newValue && Array.isArray(newValue) && newValue.length > 0) {
             sessionStorage.setItem(SESSION_KEY, JSON.stringify(newValue));
           } else {
             sessionStorage.removeItem(SESSION_KEY);
           }
         } catch (error) {
-          console.warn('Failed to save workflow to session:', error);
+          if (error.name === 'QuotaExceededError') {
+            console.warn('Session storage quota exceeded. Clearing workflow data.');
+            sessionStorage.removeItem(SESSION_KEY);
+            // Try again after clearing
+            try {
+              if (newValue && newValue.length > 0) {
+                sessionStorage.setItem(SESSION_KEY, JSON.stringify(newValue));
+              }
+            } catch (retryError) {
+              console.error('Failed to save workflow even after clearing storage:', retryError);
+            }
+          } else {
+            console.warn('Failed to save workflow to session:', error);
+          }
         }
         return newValue;
       });
@@ -142,3 +233,23 @@ function createSavedWorkflowsStore() {
 }
 
 export const savedWorkflows = createSavedWorkflowsStore();
+
+// Session persistence utilities
+export function clearComfyWebSession(): void {
+  try {
+    sessionStorage.removeItem('comfyweb_workflow_session');
+    sessionStorage.removeItem('comfyweb_gallery_session');
+    console.info('ComfyWeb session data cleared');
+  } catch (error) {
+    console.warn('Failed to clear session data:', error);
+  }
+}
+
+export function hasSessionData(): boolean {
+  try {
+    return !!(sessionStorage.getItem('comfyweb_workflow_session') || 
+             sessionStorage.getItem('comfyweb_gallery_session'));
+  } catch (error) {
+    return false;
+  }
+}

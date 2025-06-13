@@ -1,12 +1,27 @@
 <script lang="ts">
     import "./app.css";
+    import { onMount } from "svelte";
 
-    import { errorMessage, serverHost, infoMessage } from "./stores";
+    import { errorMessage, serverHost, infoMessage, hasSessionData, clearComfyWebSession } from "./stores";
 
     import DropFileContainer from "./containers/DropFileContainer.svelte";
     import SidebarContainer from "./containers/SidebarContainer.svelte";
     import GalleryContainer from "./containers/GalleryContainer.svelte";
     import NotificationToastComponent from "./components/NotificationToastComponent.svelte";
+
+    onMount(() => {
+        // Check if we restored session data and notify user
+        if (hasSessionData()) {
+            const message = "Previous session restored. Your work has been recovered.";
+            infoMessage.set(message);
+            console.info("ComfyWeb session data restored successfully");
+        }
+    });
+
+    function handleClearSession() {
+        clearComfyWebSession();
+        window.location.reload();
+    }
 </script>
 
 <main class="dark h-full flex flex-row">

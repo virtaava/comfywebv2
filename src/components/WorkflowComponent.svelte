@@ -32,6 +32,18 @@
     } {
         if (WorkflowStep.isNode(step)) {
             const type = library[step.nodeType];
+            
+            // Add null check to prevent crashes when node type not found
+            if (!type) {
+                console.warn(`Node type ${step.nodeType} not found in library`);
+                return {
+                    header: step.nodeType + " (missing)",
+                    tooltip: "Node type not available in current library",
+                    fields: step.form,
+                    schema: {},
+                };
+            }
+            
             const schema = R.mapValues<
                 Record<string, any>,
                 DeepReadonly<NodeInputSchema>
@@ -66,8 +78,11 @@
             for (const node of step.nodes) {
                 for (const from in node.formMapping) {
                     const to = node.formMapping[from];
-                    const type = library[node.type].input.required?.[from];
-                    if (type !== undefined) schema[to] = type;
+                    const nodeType = library[node.type];
+                    if (nodeType && nodeType.input && nodeType.input.required) {
+                        const type = nodeType.input.required[from];
+                        if (type !== undefined) schema[to] = type;
+                    }
                 }
             }
             return {
