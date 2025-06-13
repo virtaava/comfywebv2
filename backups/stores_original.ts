@@ -43,6 +43,3 @@ export const installationStatus = writable<{
   installing: false,
   progress: {}
 });
-
-// Saved workflows store
-export const savedWorkflows = writable<any[]>([]);

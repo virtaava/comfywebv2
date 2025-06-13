@@ -9,8 +9,6 @@
     import { type NodeLibrary } from "../lib/comfy";
     import { createPickerTree, NodePickerValue } from "../lib/picker";
     import { WorkflowItem, WorkflowStep } from "../lib/workflow";
-    import { workflowStorage } from "../lib/workflow-storage";
-    import { savedWorkflows } from "../stores";
 
     import TreeDropdownComponent from "./TreeDropdownComponent.svelte";
     import WorkflowComponent from "./WorkflowComponent.svelte";
@@ -60,26 +58,6 @@
             workflow = value.steps.map((step) =>
                 WorkflowItem.fromStep(R.clone(step), true),
             );
-        } else if (NodePickerValue.isSavedWorkflow(value)) {
-            // Load saved workflow
-            // const savedWorkflow = workflowStorage.loadWorkflow(value.metadata.id);
-            // if (savedWorkflow) {
-            //     const result = R.reduce<WorkflowStep, string | undefined>(
-            //         savedWorkflow.steps,
-            //         (acc, step) => acc ?? validateStep(step),
-            //         undefined,
-            //     );
-            //     if (result !== undefined) {
-            //         dispatch("showError", result);
-            //         return;
-            //     }
-
-            //     workflow = savedWorkflow.steps.map((step) =>
-            //         WorkflowItem.fromStep(R.clone(step), true),
-            //     );
-            // } else {
-            //     dispatch("showError", "Could not load saved workflow");
-            // }
         }
     }
 
@@ -130,7 +108,7 @@
                 <ChevronDownOutline class="ms-2" />
             </Button>
             <TreeDropdownComponent
-                tree={createPickerTree(library, $savedWorkflows)}
+                tree={createPickerTree(library)}
                 on:select={(ev) => onDropdownSelect(ev.detail)}
             />
             <Button

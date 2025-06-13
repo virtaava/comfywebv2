@@ -4,10 +4,13 @@
   "version": "0.0.4",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host --port 5173 --open",
+    "dev:debug": "vite --host --port 5173 --open --logLevel error",
+    "dev:verbose": "vite --host --port 5173 --open --logLevel warn",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json"
+    "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json",
+    "type-check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.1.1",

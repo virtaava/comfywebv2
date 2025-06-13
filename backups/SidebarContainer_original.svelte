@@ -21,24 +21,9 @@
         gallery,
         errorMessage,
         serverHost,
-        savedWorkflows,
     } from "../stores";
-    import { workflowStorage } from "../lib/workflow-storage";
-    // import SaveWorkflowDialog from "../components/SaveWorkflowDialog.svelte";
-    import { infoMessage } from "../stores";
 
     import SidebarComponent from "../components/SidebarComponent.svelte";
-
-    let showSaveDialog = false;
-
-    // Load saved workflows on component mount
-    function loadSavedWorkflows() {
-        const metadata = workflowStorage.getWorkflowMetadata();
-        savedWorkflows.set(metadata);
-    }
-    
-    // Load saved workflows on init
-    loadSavedWorkflows();
 
     async function handleEnqueue(items: WorkflowItem[]) {
         const steps = items.map((item) => item.step);
@@ -83,18 +68,7 @@
     }
 
     function handleSaveWorkflow(items: DeepReadonly<WorkflowItem[]>) {
-        // Show save dialog instead of downloading - temporarily disabled
-        // showSaveDialog = true;
-        
-        // For now, just download the workflow as before
-        const steps = items.map((item) => item.step);
-        downloadJson(steps);
-    }
-
-    function handleSaveWorkflowLocal(event: CustomEvent<{ id: string; name: string }>) {
-        const { name } = event.detail;
-        infoMessage.set(`Workflow "${name}" saved successfully!`);
-        loadSavedWorkflows(); // Refresh the saved workflows list
+        downloadJson(items.map((item) => item.step));
     }
 
     function handleSaveAsComfyUIWorkflow(items: DeepReadonly<WorkflowItem[]>) {
@@ -171,13 +145,3 @@
     on:saveAsComfyUIWorkflow={(ev) => handleSaveAsComfyUIWorkflow(ev.detail)}
     on:showError={(ev) => handleShowError(ev.detail)}
 />
-
-<!-- SaveWorkflowDialog temporarily disabled -->
-<!-- 
-<SaveWorkflowDialog
-    bind:isOpen={showSaveDialog}
-    workflowSteps={$workflow.map(item => item.step)}
-    on:saved={handleSaveWorkflowLocal}
-    on:close={() => showSaveDialog = false}
-/>
--->

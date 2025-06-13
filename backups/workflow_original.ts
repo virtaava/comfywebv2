@@ -82,21 +82,6 @@ export function loadFromComfyWorkflow(
   graph: ComfyWorkflow,
   library: DeepReadonly<NodeLibrary>,
 ): WorkflowStep[] {
-  // Validate workflow structure
-  if (!graph) {
-    throw new WorkflowLoadError.InvalidWorkflow('Workflow is null or undefined');
-  }
-  
-  if (!graph.nodes || !Array.isArray(graph.nodes)) {
-    throw new WorkflowLoadError.InvalidWorkflow('Workflow missing valid nodes array');
-  }
-  
-  if (!graph.links || !Array.isArray(graph.links)) {
-    throw new WorkflowLoadError.InvalidWorkflow('Workflow missing valid links array');
-  }
-
-  console.log('Loading ComfyUI workflow with', graph.nodes.length, 'nodes and', graph.links.length, 'links');
-  
   patchConditioningNodes(graph.nodes);
 
   const nodesById = new Map(graph.nodes.map((node) => [node.id, node]));
@@ -624,12 +609,6 @@ export namespace WorkflowLoadError {
   export class UnknownNodeType extends WorkflowLoadError {
     constructor(type: string) {
       super(`Unknown node type ${type}`);
-    }
-  }
-
-  export class InvalidWorkflow extends WorkflowLoadError {
-    constructor(reason: string) {
-      super(`Invalid workflow: ${reason}`);
     }
   }
 }

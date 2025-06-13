@@ -45,4 +45,4 @@ export const installationStatus = writable<{
 });
 
 // Saved workflows store
-export const savedWorkflows = writable<any[]>([]);
+export const savedWorkflows = writable<import('./lib/workflow-storage').WorkflowMetadata[]>([]);
