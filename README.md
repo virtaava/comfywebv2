@@ -19,16 +19,26 @@ ComfyWeb v2 is an enhanced interface for ComfyUI that replaces complex node grap
 
 ## Usage
 
-Start ComfyUI with CORS enabled:
-```bash
-python main.py --enable-cors-header '*'
-```
+### Getting Started
 
-**Getting ComfyWeb v2:**
-- Download from the [Releases page](../../releases) 
-- Or build from source (see instructions below)
+1. **Start ComfyUI with CORS enabled:**
+   ```bash
+   python main.py --enable-cors-header '*'
+   ```
 
-If you want to connect to a remote server, you should configure the host name in the 'Manage' tab.
+2. **Get ComfyWeb v2:**
+   ```bash
+   # Clone and build from source
+   git clone https://github.com/virtaava/comfywebv2.git
+   cd comfywebv2
+   npm install
+   npm run build
+   
+   # Open dist/index.html in your browser
+   ```
+
+3. **Configure Connection:**
+   If you want to connect to a remote server, configure the host name in the 'Manage' tab.
 
 ## Screenshots
 <img src="https://github.com/virtaava/comfywebv2/blob/master/docs/Screenshot%202025-06-13%20125055.png" width="360px"/>
@@ -38,12 +48,15 @@ If you want to connect to a remote server, you should configure the host name in
 
 ### Prerequisites
 - Node.js 18+ and npm
+- Git
 
 ### Build Steps
 ```bash
-# Clone and install
+# Clone the repository
 git clone https://github.com/virtaava/comfywebv2.git
 cd comfywebv2
+
+# Install dependencies
 npm install
 
 # Build for production
@@ -54,6 +67,7 @@ npm run build
 
 ### Development
 ```bash
+# Start development server
 npm run dev  # Opens at http://localhost:5173
 ```
 
