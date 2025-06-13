@@ -11,7 +11,6 @@ ComfyWeb is a simple interface for ComfyUI that replaces graphs with beautiful f
   with ComfyWeb can be loaded with ComfyUI (although they're not guaranteed to be pretty!).
 
 ## Usage
-This project builds into a single HTML file. You can try it by opening the [Github Pages build](https://virtaava.github.io/comfywebv2).
 
 ```bash
 python main.py --enable-cors-header '*'
