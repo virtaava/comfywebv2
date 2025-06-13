@@ -234,6 +234,87 @@ function createSavedWorkflowsStore() {
 
 export const savedWorkflows = createSavedWorkflowsStore();
 
+// Gallery tab stores with session persistence
+function createSessionImagesStore() {
+  const SESSION_KEY = 'comfyweb_session_images';
+  
+  // Try to restore from sessionStorage
+  let initialValue: string[] = [];
+  try {
+    const saved = sessionStorage.getItem(SESSION_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        initialValue = parsed;
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to restore session images:', error);
+  }
+
+  const { subscribe, set, update } = writable<string[]>(initialValue);
+  
+  return {
+    subscribe,
+    set: (value: string[]) => {
+      // Save to sessionStorage
+      try {
+        if (value.length > 0) {
+          sessionStorage.setItem(SESSION_KEY, JSON.stringify(value));
+        } else {
+          sessionStorage.removeItem(SESSION_KEY);
+        }
+      } catch (error) {
+        console.warn('Failed to save session images:', error);
+      }
+      set(value);
+    },
+    update,
+    addImage: (imageUrl: string) => {
+      update(images => {
+        if (!images.includes(imageUrl)) {
+          const newImages = [...images, imageUrl];
+          // Save to sessionStorage
+          try {
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify(newImages));
+          } catch (error) {
+            console.warn('Failed to save session images:', error);
+          }
+          return newImages;
+        }
+        return images;
+      });
+    }
+  };
+}
+
+function createOutputImagesStore() {
+  const { subscribe, set, update } = writable<string[]>([]);
+  
+  return {
+    subscribe,
+    set,
+    update,
+    refresh: async (serverHost: string) => {
+      try {
+        const response = await fetch(`http://${serverHost}/output/`);
+        if (response.ok) {
+          const html = await response.text();
+          const matches = [...html.matchAll(/href=\"([^\"]+\.(png|jpg|jpeg|webp))\"/g)];
+          const urls = matches.map(match => `http://${serverHost}/output/${match[1]}`);
+          set(urls.reverse()); // Most recent first
+        }
+      } catch (error) {
+        console.warn('Failed to load output images:', error);
+        set([]);
+      }
+    }
+  };
+}
+
+export const sessionImages = createSessionImagesStore();
+export const outputImages = createOutputImagesStore();
+
 // Session persistence utilities
 export function clearComfyWebSession(): void {
   try {

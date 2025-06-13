@@ -1,7 +1,8 @@
-import { getWsUrl } from "./api";
+import { getWsUrl, getImageUrl } from "./api";
 import { Message } from "./comfy";
 import { GalleryItem } from "./gallery";
-import { errorMessage, gallery, infoMessage } from "../stores";
+import { errorMessage, gallery, infoMessage, sessionImages, serverHost } from "../stores";
+import { get } from "svelte/store";
 
 export function spawnWebSocketListener(host: string): WebSocket {
   const ws = new WebSocket(getWsUrl(host));
@@ -38,11 +39,21 @@ export function spawnWebSocketListener(host: string): WebSocket {
       gallery.update((state) => {
         const existing = state[payload.data.prompt_id];
         if (existing !== undefined) {
-          state[payload.data.prompt_id] = GalleryItem.newExecuted(
+          const newItem = GalleryItem.newExecuted(
             existing.id,
             existing.workflow,
             payload.data.output?.images,
           );
+          state[payload.data.prompt_id] = newItem;
+          
+          // Add generated images to session store for Gallery tab
+          if (newItem.images && newItem.images.length > 0) {
+            const currentHost = get(serverHost);
+            newItem.images.forEach(image => {
+              const imageUrl = getImageUrl(currentHost, image);
+              sessionImages.addImage(imageUrl);
+            });
+          }
         }
         return state;
       });
