@@ -1,16 +1,35 @@
 {
-  "name": "comfyweb",
-  "private": true,
-  "version": "0.0.4",
+  "name": "comfyweb-v2",
+  "private": false,
+  "version": "2.0.0",
   "type": "module",
+  "description": "Enhanced ComfyUI workflow interface with advanced features and professional UI",
+  "author": "virtaava",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/virtaava/comfywebv2.git"
+  },
+  "homepage": "https://virtaava.github.io/comfywebv2",
+  "keywords": [
+    "comfyui",
+    "workflow",
+    "ai",
+    "image-generation",
+    "stable-diffusion",
+    "svelte",
+    "typescript"
+  ],
   "scripts": {
     "dev": "vite --host --port 5173 --open",
     "dev:debug": "vite --host --port 5173 --open --logLevel error",
     "dev:verbose": "vite --host --port 5173 --open --logLevel warn",
     "build": "vite build",
+    "build:gh-pages": "vite build --base=/comfywebv2/",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json",
-    "type-check": "svelte-check --tsconfig ./tsconfig.json"
+    "type-check": "svelte-check --tsconfig ./tsconfig.json",
+    "deploy": "npm run build:gh-pages && gh-pages -d dist"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.1.1",
@@ -19,6 +38,7 @@
     "flowbite": "^2.5.1",
     "flowbite-svelte": "^0.46.15",
     "flowbite-svelte-icons": "^1.6.1",
+    "gh-pages": "^6.1.1",
     "install": "^0.13.0",
     "npm": "^10.8.3",
     "svelte": "^4.2.18",

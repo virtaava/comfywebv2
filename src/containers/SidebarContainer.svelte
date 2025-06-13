@@ -23,8 +23,8 @@
         serverHost,
         savedWorkflows,
     } from "../stores";
-    import { workflowStorage } from "../lib/workflow-storage";
-    // import SaveWorkflowDialog from "../components/SaveWorkflowDialog.svelte";
+    import { workflowStorage } from "../lib/workflow-storage-filesystem";
+    import SaveWorkflowDialog from "../components/SaveWorkflowDialog_Simple.svelte";
     import { infoMessage } from "../stores";
 
     import SidebarComponent from "../components/SidebarComponent.svelte";
@@ -83,12 +83,39 @@
     }
 
     function handleSaveWorkflow(items: DeepReadonly<WorkflowItem[]>) {
-        // Show save dialog instead of downloading - temporarily disabled
-        // showSaveDialog = true;
-        
-        // For now, just download the workflow as before
-        const steps = items.map((item) => item.step);
-        downloadJson(steps);
+        // Show save dialog
+        showSaveDialog = true;
+    }
+
+    async function handleExportWorkflows() {
+        try {
+            await workflowStorage.exportAllWorkflows();
+            infoMessage.set("Workflows exported successfully!");
+        } catch (error) {
+            errorMessage.set("Failed to export workflows");
+        }
+    }
+
+    async function handleImportWorkflows(event: Event) {
+        const input = event.target as HTMLInputElement;
+        const file = input.files?.[0];
+        if (!file) return;
+
+        try {
+            const result = await workflowStorage.importWorkflows(file);
+            if (result.success > 0) {
+                infoMessage.set(`Imported ${result.success} workflow(s) successfully!`);
+                loadSavedWorkflows(); // Refresh the list
+            }
+            if (result.errors.length > 0) {
+                errorMessage.set(`Import completed with errors: ${result.errors.join(', ')}`);
+            }
+        } catch (error) {
+            errorMessage.set("Failed to import workflows");
+        }
+
+        // Clear the input
+        input.value = '';
     }
 
     function handleSaveWorkflowLocal(event: CustomEvent<{ id: string; name: string }>) {
@@ -169,15 +196,15 @@
     on:enqueue={(ev) => handleEnqueue(ev.detail)}
     on:saveWorkflow={(ev) => handleSaveWorkflow(ev.detail)}
     on:saveAsComfyUIWorkflow={(ev) => handleSaveAsComfyUIWorkflow(ev.detail)}
+    on:exportWorkflows={handleExportWorkflows}
+    on:importWorkflows={(ev) => handleImportWorkflows(ev.detail)}
     on:showError={(ev) => handleShowError(ev.detail)}
 />
 
-<!-- SaveWorkflowDialog temporarily disabled -->
-<!-- 
+<!-- SaveWorkflowDialog enabled with simple version -->
 <SaveWorkflowDialog
     bind:isOpen={showSaveDialog}
     workflowSteps={$workflow.map(item => item.step)}
     on:saved={handleSaveWorkflowLocal}
     on:close={() => showSaveDialog = false}
 />
--->

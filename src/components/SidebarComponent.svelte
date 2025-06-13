@@ -23,8 +23,12 @@
         enqueue: WorkflowItem[];
         saveWorkflow: DeepReadonly<WorkflowItem[]>;
         saveAsComfyUIWorkflow: DeepReadonly<WorkflowItem[]>;
+        exportWorkflows: void;
+        importWorkflows: Event;
         showError: string;
     }>();
+
+    let fileInput: HTMLInputElement;
 
     function onDropdownSelect(value: DeepReadonly<NodePickerValue>) {
         if (NodePickerValue.isNode(value)) {
@@ -99,6 +103,23 @@
 </script>
 
 <div class="w-[568px] h-full flex flex-col border-r-2 border-zinc-700">
+    <!-- ComfyWeb v2 Header -->
+    <div class="bg-gradient-to-r from-purple-900 to-blue-900 px-4 py-3 border-b border-zinc-700">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-xl font-bold text-white tracking-wide">
+                    ComfyWeb <span class="text-purple-300 text-sm font-semibold">v2</span>
+                </h1>
+                <p class="text-xs text-gray-300 opacity-75">Enhanced Workflow Interface</p>
+            </div>
+            <div class="text-purple-400">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+    
     <Tabs tabStyle="underline" contentClass="overflow-y-scroll">
         <TabItem open title="Workflow">
             <WorkflowComponent bind:items={workflow} {library} />
@@ -116,6 +137,30 @@
                     on:click={() => dispatch("saveAsComfyUIWorkflow", workflow)}
                 >
                     Save as ComfyUI workflow
+                </Button>
+                
+                <h2 class="mt-4">Workflow Management</h2>
+                <Button
+                    color="blue"
+                    size="sm"
+                    on:click={() => dispatch("exportWorkflows")}
+                >
+                    Export All Workflows
+                </Button>
+                
+                <input
+                    type="file"
+                    accept=".json"
+                    on:change={(e) => dispatch("importWorkflows", e)}
+                    style="display: none;"
+                    bind:this={fileInput}
+                />
+                <Button
+                    color="green"
+                    size="sm"
+                    on:click={() => fileInput?.click()}
+                >
+                    Import Workflows
                 </Button>
 
                 <h2 class="mt-4">Settings</h2>
@@ -139,7 +184,7 @@
                 color="purple"
                 on:click={() => dispatch("enqueue", workflow)}
             >
-                Enqueue
+                Generate
             </Button>
         </div>
     </Tabs>
