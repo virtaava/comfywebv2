@@ -3,5 +3,6 @@ import { svelte } from "@sveltejs/vite-plugin-svelte";
 import { viteSingleFile } from "vite-plugin-singlefile";
 
 export default defineConfig({
+  base: process.env.NODE_ENV === 'production' ? '/comfywebv2/' : '/',
   plugins: [svelte(), viteSingleFile({ removeViteModuleLoader: true })],
 });
