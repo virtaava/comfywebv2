@@ -76,15 +76,12 @@ The installation scripts will check for these automatically:
 - **Workflow Tab**: Create and edit your workflow steps
 - **Manage Tab**: Configure server settings and export workflows
 
-**Center Panel - Gallery:**
+**Gallery Panel:**
 - **Generated Images**: View your created images
 - **Queue Status**: See generation progress in real-time
 - **Image Actions**: 
   - 📁 **Import Icon** (left): Load the workflow used to generate this image
   - 🗑️ **Trash Icon** (right): Delete this image from gallery
-
-**Right Panel - Generated Results:**
-- **Image Grid**: All your generated images
 - **Click to Enlarge**: View images in full screen
 - **Workflow Recovery**: Click the import icon to restore exact settings
 
