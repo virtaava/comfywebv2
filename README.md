@@ -17,19 +17,6 @@ ComfyWeb v2 is an enhanced version of the original [ComfyWeb](https://github.com
 - **📁 ComfyUI Compatibility**: Standard format workflows that work everywhere
 - **⚡ Enhanced Performance**: Improved error handling and validation
 
-## 📊 ComfyWeb v2 vs Original Comparison
-
-| Feature | Original ComfyWeb | ComfyWeb v2 |
-|---------|-------------------|-------------|
-| **Workflow Import** | ❌ Crashes with `TypeError` | ✅ Fixed + Enhanced validation |
-| **Browser Storage** | ❌ No persistence | ✅ Save/load workflows locally |
-| **Gallery System** | ❌ Basic display | ✅ Professional session gallery |
-| **UI Design** | ⚠️ Basic interface | ✅ Professional branding + UX |
-| **Error Handling** | ⚠️ Basic | ✅ Comprehensive debugging |
-| **Image Previews** | ⚠️ Basic | ✅ Professional upload with previews |
-| **File Compatibility** | ✅ ComfyUI workflows | ✅ Enhanced ComfyUI compatibility |
-| **Session Recovery** | ❌ Lost on refresh | ✅ Workflow & gallery persistence |
-
 ## 🚀 Quick Start
 
 ### Prerequisites
