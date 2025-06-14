@@ -25,6 +25,11 @@ install-*.bat
 test-templates.*
 vite.config.simple-test.ts
 
+# Project management files (not for repository)
+DEVELOPMENT_PROTOCOL.md
+PROJECT_TRACKER.md
+NEW_CLAUDE_ONBOARDING.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
