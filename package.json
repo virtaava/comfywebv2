@@ -29,7 +29,7 @@
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json",
     "type-check": "svelte-check --tsconfig ./tsconfig.json",
-    "deploy": "npm run build:gh-pages && gh-pages -d dist"
+    "deploy": "npm run build:gh-pages && npx gh-pages -d dist"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.1.1",
@@ -38,7 +38,7 @@
     "flowbite": "^2.5.1",
     "flowbite-svelte": "^0.46.15",
     "flowbite-svelte-icons": "^1.6.1",
-    "gh-pages": "^6.1.1",
+    "gh-pages": "^6.3.0",
     "install": "^0.13.0",
     "npm": "^10.8.3",
     "svelte": "^4.2.18",
