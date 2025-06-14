@@ -98,7 +98,7 @@ npm run dev
 
 ### 🔧 Error Handling & Debugging
 - **✅ Enhanced Error Handling**: Comprehensive debugging and validation with clear error messages
-- **⚠️ Missing Node Error Detection**: Shows missing custom nodes but errors auto-close quickly (improvement planned)
+- **✅ Missing Nodes Dialog**: Persistent dialog showing missing custom nodes with installation options (replaces auto-dismissing error toasts)
 - **✅ Type Safety**: Full TypeScript implementation with proper error boundaries
 - **✅ File Upload System**: Complete image upload to ComfyUI server with progress indicators
 
@@ -114,7 +114,6 @@ npm run dev
 - **📁 Output Folder Browsing**: Browse ComfyUI's output directory (requires additional setup due to browser security limitations)
 - **⚡ Pipeline Integration**: Gallery action icons for using images as inputs to next workflow stages
 - **🛑 Generation Control**: Stop/interrupt functionality via ComfyUI interrupt API
-- **🔧 Missing Node Error UX**: Keep error messages open until manually dismissed, add copy functionality for node names
 - **📂 Workflow File Import**: Import saved ComfyWeb workflow files (currently only ComfyUI drag & drop works)
 - **🔌 Missing Node Installation**: Automatic node installation system (detection works, requires backend integration)
 

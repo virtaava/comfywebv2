@@ -46,8 +46,16 @@ export class MissingNodeDetector {
       return [];
     }
 
+    return this.getMissingNodeInfo(missingNodeTypes);
+  }
+
+  async getMissingNodeInfo(nodeTypes: NodeTypeId[]): Promise<MissingNodeInfo[]> {
+    if (nodeTypes.length === 0) {
+      return [];
+    }
+
     const registryData = await this.getRegistryData();
-    return this.resolveMissingNodes(missingNodeTypes, registryData);
+    return this.resolveMissingNodes(nodeTypes, registryData);
   }
 
   private extractMissingNodeTypes(
