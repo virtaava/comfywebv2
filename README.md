@@ -47,21 +47,139 @@ ComfyWeb v2 is an enhanced version of the original [ComfyWeb](https://github.com
 ## 🚀 Quick Start
 
 ### Prerequisites
-- [ComfyUI](https://github.com/comfyanonymous/ComfyUI) installed and running
-- [Node.js](https://nodejs.org/) (v16+) for building
+
+#### Install ComfyUI
+**Windows:**
+```cmd
+# Clone ComfyUI
+git clone https://github.com/comfyanonymous/ComfyUI.git
+cd ComfyUI
+
+# Create virtual environment
+python -m venv venv
+venv\Scripts\activate
+
+# Install dependencies
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+pip install -r requirements.txt
+```
+
+**Linux/Mac:**
+```bash
+# Clone ComfyUI
+git clone https://github.com/comfyanonymous/ComfyUI.git
+cd ComfyUI
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+pip install -r requirements.txt
+```
+
+#### Install Node.js
+- Download and install [Node.js](https://nodejs.org/) (v16 or higher)
+- Verify installation: `node --version` and `npm --version`
 
 ### Installation
-```bash
+
+#### Install ComfyWeb v2
+**Windows:**
+```cmd
+# Clone ComfyWeb v2
 git clone https://github.com/virtaava/comfywebv2.git
 cd comfywebv2
+
+# Install dependencies
 npm install
+
+# Start development server
 npm run dev
 ```
 
-### ComfyUI Setup
+**Linux/Mac:**
 ```bash
+# Clone ComfyWeb v2
+git clone https://github.com/virtaava/comfywebv2.git
+cd comfywebv2
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+### Running Both Systems
+
+#### Start ComfyUI (First Terminal)
+**Windows:**
+```cmd
+cd C:\path\to\ComfyUI
+venv\Scripts\activate
 python main.py --enable-cors-header '*'
 ```
+
+**Linux/Mac:**
+```bash
+cd /path/to/ComfyUI
+source venv/bin/activate
+python main.py --enable-cors-header '*'
+```
+
+#### Start ComfyWeb v2 (Second Terminal)
+**Windows:**
+```cmd
+cd C:\path\to\comfywebv2
+npm run dev
+```
+
+**Linux/Mac:**
+```bash
+cd /path/to/comfywebv2
+npm run dev
+```
+
+### Automated Launch Scripts
+
+Create these scripts to start both systems automatically:
+
+**Windows**: `launch-comfyweb-v2.bat`
+```batch
+@echo off
+echo Starting ComfyUI...
+start /B cmd /c "cd /d C:\path\to\ComfyUI && venv\Scripts\activate && python main.py --enable-cors-header '*'"
+timeout /t 5
+echo Starting ComfyWeb v2...
+cd /d "C:\path\to\comfywebv2"
+npm run dev
+```
+
+**Linux/Mac**: `launch-comfyweb-v2.sh`
+```bash
+#!/bin/bash
+echo "Starting ComfyUI..."
+cd /path/to/ComfyUI
+source venv/bin/activate
+python main.py --enable-cors-header '*' &
+sleep 5
+echo "Starting ComfyWeb v2..."
+cd /path/to/comfywebv2
+npm run dev
+```
+
+Make the script executable on Linux/Mac:
+```bash
+chmod +x launch-comfyweb-v2.sh
+./launch-comfyweb-v2.sh
+```
+
+### Access the Interface
+1. ComfyUI will start on: `http://localhost:8188`
+2. ComfyWeb v2 will start on: `http://localhost:5173`
+3. Open ComfyWeb v2 in your browser to begin creating workflows
 
 ## 📊 Template Library
 
