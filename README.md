@@ -190,11 +190,13 @@ echo "Press Enter to exit..."
 read
 ```
 
-Make the script executable on Linux/Mac:
+Make the script executable and run on Linux/Mac:
 ```bash
 chmod +x launch-comfyweb-v2.sh
 ./launch-comfyweb-v2.sh
 ```
+
+**Note**: The scripts will open ComfyUI in a separate terminal window so you can monitor both systems.
 
 ### Access the Interface
 1. ComfyUI will start on: `http://localhost:8188`
