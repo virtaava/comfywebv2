@@ -16,8 +16,14 @@ dist-ssr
 *.local
 
 # Development folders (not for repository)
-Archive/
 backups/
+Archive/
+build-and-deploy*.bat
+build-and-deploy*.sh
+install-*.sh
+install-*.bat
+test-templates.*
+vite.config.simple-test.ts
 
 # Editor directories and files
 .vscode/*
