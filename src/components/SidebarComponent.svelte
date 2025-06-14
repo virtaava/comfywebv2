@@ -19,9 +19,11 @@
     export let workflow: WorkflowItem[];
     export let library: DeepReadonly<NodeLibrary>;
     export let serverHost: string;
+    export let generationState: { isGenerating: boolean; currentPromptId?: string };
 
     const dispatch = createEventDispatcher<{
         enqueue: WorkflowItem[];
+        stopGeneration: void;
         saveWorkflow: DeepReadonly<WorkflowItem[]>;
         saveAsComfyUIWorkflow: DeepReadonly<WorkflowItem[]>;
         exportWorkflows: void;
@@ -224,14 +226,25 @@
                 tree={createPickerTree(library, $savedWorkflows)}
                 on:select={(ev) => onDropdownSelect(ev.detail)}
             />
-            <Button
-                class="my-2 mr-1"
-                size="sm"
-                color="purple"
-                on:click={() => dispatch("enqueue", workflow)}
-            >
-                Generate
-            </Button>
+            {#if generationState.isGenerating}
+                <Button
+                    class="my-2 mr-1"
+                    size="sm"
+                    color="red"
+                    on:click={() => dispatch("stopGeneration")}
+                >
+                    Stop
+                </Button>
+            {:else}
+                <Button
+                    class="my-2 mr-1"
+                    size="sm"
+                    color="purple"
+                    on:click={() => dispatch("enqueue", workflow)}
+                >
+                    Generate
+                </Button>
+            {/if}
         </div>
     </Tabs>
 </div>

@@ -135,3 +135,16 @@ function cyrb53(str: string, seed: number = 0): number {
 
   return 4294967296 * (2097151 & h2) + (h1 >>> 0);
 }
+
+/**
+ * Interrupt the current generation via ComfyUI's interrupt endpoint
+ */
+export async function interruptGeneration(host: string): Promise<void> {
+  const response = await fetch(`http://${host}/interrupt`, {
+    method: 'POST'
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Failed to interrupt generation: ${response.statusText}`);
+  }
+}

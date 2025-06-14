@@ -189,6 +189,15 @@ export const installationStatus = writable<{
   progress: {}
 });
 
+// Generation state store for stop functionality
+export const generationState = writable<{
+  isGenerating: boolean;
+  currentPromptId?: string;
+}>({
+  isGenerating: false,
+  currentPromptId: undefined
+});
+
 // Saved workflows store (localStorage for permanent storage)
 function createSavedWorkflowsStore() {
   const STORAGE_KEY = 'comfyweb_saved_workflows';

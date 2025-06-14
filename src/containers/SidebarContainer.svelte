@@ -22,7 +22,9 @@
         errorMessage,
         serverHost,
         savedWorkflows,
+        generationState,
     } from "../stores";
+    import { interruptGeneration } from "../lib/api";
     import { workflowStorage } from "../lib/workflow-storage-filesystem";
     import SaveWorkflowDialog from "../components/SaveWorkflowDialog_Simple.svelte";
     import { infoMessage } from "../stores";
@@ -51,6 +53,13 @@
             });
             if (res.ok) {
                 const data = (await res.json()) as PromptResponse;
+                
+                // Update generation state
+                generationState.set({
+                    isGenerating: true,
+                    currentPromptId: data.prompt_id
+                });
+                
                 gallery.update((state) => {
                     const item = GalleryItem.newQueued(
                         data.prompt_id,
@@ -85,6 +94,19 @@
     function handleSaveWorkflow(items: DeepReadonly<WorkflowItem[]>) {
         // Show save dialog
         showSaveDialog = true;
+    }
+
+    async function handleStopGeneration() {
+        try {
+            await interruptGeneration($serverHost);
+            generationState.set({
+                isGenerating: false,
+                currentPromptId: undefined
+            });
+            infoMessage.set("Generation stopped successfully");
+        } catch (error) {
+            errorMessage.set(`Failed to stop generation: ${error.message}`);
+        }
     }
 
     async function handleExportWorkflows() {
@@ -193,7 +215,9 @@
     bind:workflow={$workflow}
     bind:serverHost={$serverHost}
     library={$library}
+    generationState={$generationState}
     on:enqueue={(ev) => handleEnqueue(ev.detail)}
+    on:stopGeneration={handleStopGeneration}
     on:saveWorkflow={(ev) => handleSaveWorkflow(ev.detail)}
     on:saveAsComfyUIWorkflow={(ev) => handleSaveAsComfyUIWorkflow(ev.detail)}
     on:exportWorkflows={handleExportWorkflows}

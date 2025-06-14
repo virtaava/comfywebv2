@@ -1,7 +1,7 @@
 import { getWsUrl, getImageUrl } from "./api";
 import { Message } from "./comfy";
 import { GalleryItem } from "./gallery";
-import { errorMessage, gallery, infoMessage, sessionImages, serverHost } from "../stores";
+import { errorMessage, gallery, infoMessage, sessionImages, serverHost, generationState } from "../stores";
 import { get } from "svelte/store";
 
 export function spawnWebSocketListener(host: string): WebSocket {
@@ -54,6 +54,15 @@ export function spawnWebSocketListener(host: string): WebSocket {
               sessionImages.addImage(imageUrl);
             });
           }
+          
+          // Reset generation state when this prompt completes
+          const currentState = get(generationState);
+          if (currentState.currentPromptId === payload.data.prompt_id) {
+            generationState.set({
+              isGenerating: false,
+              currentPromptId: undefined
+            });
+          }
         }
         return state;
       });
@@ -68,6 +77,15 @@ export function spawnWebSocketListener(host: string): WebSocket {
             payload.data.exception_type,
             payload.data.node_type,
           );
+          
+          // Reset generation state on error too
+          const currentState = get(generationState);
+          if (currentState.currentPromptId === payload.data.prompt_id) {
+            generationState.set({
+              isGenerating: false,
+              currentPromptId: undefined
+            });
+          }
         }
         return state;
       });
