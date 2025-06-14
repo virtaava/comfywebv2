@@ -1,786 +1,843 @@
 {
-  "categories": {
-    "universal": {
-      "name": "Universal Templates",
-      "description": "Modern AI image generation templates",
-      "subcategories": {
-        "text_to_image": {
-          "name": "📸 Text to Image",
-          "description": "Generate images from text descriptions",
-          "templates": {
-            "sdxl_basic": {
-              "metadata": {
-                "name": "SDXL Basic",
-                "description": "Standard SDXL text-to-image generation",
-                "difficulty": "beginner",
-                "estimated_time": "30-60 seconds",
-                "example_prompts": ["astronaut", "beautiful landscape", "portrait of a person"]
-              },
-              "workflow": [
-                {
-                  "type": "Node",
-                  "nodeType": "CheckpointLoaderSimple",
-                  "form": { "ckpt_name": "zavychromaxl_v90.safetensors" }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "EmptyLatentImage",
-                  "form": { "width": 1024, "height": 1024, "batch_size": 1 }
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Prompt",
-                  "description": "Provides both positive and negative conditioning in a single step.",
-                  "form": { "positive": "astronaut", "negative": "" },
-                  "nodes": [
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["POSITIVE_CONDITIONING"],
-                      "formMapping": { "text": "positive" }
-                    },
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["NEGATIVE_CONDITIONING"],
-                      "formMapping": { "text": "negative" }
-                    }
-                  ]
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "KSampler",
-                  "form": {
-                    "seed": 0,
-                    "control_after_generate": "randomize",
-                    "steps": 25,
-                    "cfg": 7,
-                    "sampler_name": "dpmpp_2m",
-                    "scheduler": "karras",
-                    "denoise": 1
-                  }
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Preview",
-                  "description": "Performs VAEDecode and PreviewImage in a single step.",
-                  "form": {},
-                  "nodes": [
-                    { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-                    { "type": "PreviewImage", "outputs": [], "formMapping": {} }
-                  ]
-                }
-              ]
-            },
-            "sd15_classic": {
-              "metadata": {
-                "name": "SD 1.5 Classic",
-                "description": "Classic Stable Diffusion 1.5 generation",
-                "difficulty": "beginner",
-                "estimated_time": "15-30 seconds",
-                "example_prompts": ["portrait", "landscape", "anime character"]
-              },
-              "workflow": [
-                {
-                  "type": "Node",
-                  "nodeType": "CheckpointLoaderSimple",
-                  "form": { "ckpt_name": "v1-5-pruned-emaonly.ckpt" }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "EmptyLatentImage",
-                  "form": { "width": 512, "height": 512, "batch_size": 1 }
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Prompt",
-                  "description": "Provides both positive and negative conditioning in a single step.",
-                  "form": { "positive": "portrait", "negative": "" },
-                  "nodes": [
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["POSITIVE_CONDITIONING"],
-                      "formMapping": { "text": "positive" }
-                    },
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["NEGATIVE_CONDITIONING"],
-                      "formMapping": { "text": "negative" }
-                    }
-                  ]
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "KSampler",
-                  "form": {
-                    "seed": 0,
-                    "control_after_generate": "randomize",
-                    "steps": 20,
-                    "cfg": 7,
-                    "sampler_name": "euler",
-                    "scheduler": "normal",
-                    "denoise": 1
-                  }
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Preview",
-                  "description": "Performs VAEDecode and PreviewImage in a single step.",
-                  "form": {},
-                  "nodes": [
-                    { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-                    { "type": "PreviewImage", "outputs": [], "formMapping": {} }
-                  ]
-                }
-              ]
-            },
-            "flux_gguf": {
-              "metadata": {
-                "name": "Flux GGUF",
-                "description": "Flux model with GGUF quantization",
-                "difficulty": "intermediate",
-                "estimated_time": "1-2 minutes",
-                "example_prompts": ["detailed portrait", "futuristic scene", "artistic landscape"]
-              },
-              "workflow": [
-                {
-                  "type": "Node",
-                  "nodeType": "EmptyLatentImage",
-                  "form": { "width": "1024", "height": "1024", "batch_size": 1 }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "VAELoader",
-                  "form": { "vae_name": "flux.safetensors" }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "UnetLoaderGGUF",
-                  "form": { "unet_name": "flux1-dev-Q8_0.gguf" }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "DualCLIPLoaderGGUF",
-                  "form": {
-                    "clip_name1": "t5-v1_1-xxl-encoder-Q8_0.gguf",
-                    "clip_name2": "clip_l.safetensors",
-                    "type": "flux"
-                  }
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Prompt",
-                  "description": "Provides both positive and negative conditioning in a single step.",
-                  "form": { "positive": "astronaut", "negative": "" },
-                  "nodes": [
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["POSITIVE_CONDITIONING"],
-                      "formMapping": { "text": "positive" }
-                    },
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["NEGATIVE_CONDITIONING"],
-                      "formMapping": { "text": "negative" }
-                    }
-                  ]
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "KSampler",
-                  "form": {
-                    "seed": "0",
-                    "control_after_generate": "randomize",
-                    "steps": "24",
-                    "cfg": "1",
-                    "sampler_name": "euler",
-                    "scheduler": "beta",
-                    "denoise": 1
-                  }
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Preview",
-                  "description": "Performs VAEDecode and PreviewImage in a single step.",
-                  "form": {},
-                  "nodes": [
-                    { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-                    { "type": "PreviewImage", "outputs": [], "formMapping": {} }
-                  ]
-                }
-              ]
-            }
-          }
+  "SDXL Basic": [
+    {
+      "type": "Node",
+      "nodeType": "CheckpointLoaderSimple",
+      "form": { "ckpt_name": "zavychromaxl_v90.safetensors" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "EmptyLatentImage",
+      "form": { "width": 1024, "height": 1024, "batch_size": 1 }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Prompt",
+      "description": "Provides both positive and negative conditioning in a single step.",
+      "form": { "positive": "astronaut", "negative": "" },
+      "nodes": [
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["POSITIVE_CONDITIONING"],
+          "formMapping": { "text": "positive" }
         },
-        "image_to_image": {
-          "name": "🖼️ Image to Image",
-          "description": "Transform existing images",
-          "templates": {
-            "basic_img2img": {
-              "metadata": {
-                "name": "Basic Image to Image",
-                "description": "Transform an existing image with new prompts",
-                "difficulty": "beginner",
-                "estimated_time": "30-45 seconds",
-                "example_prompts": ["enhanced version", "different style", "same subject, new background"]
-              },
-              "workflow": [
-                {
-                  "type": "Node",
-                  "nodeType": "CheckpointLoaderSimple",
-                  "form": { "ckpt_name": "zavychromaxl_v90.safetensors" }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "LoadImage",
-                  "form": { "image": "example.png" }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "VAEEncode",
-                  "form": {}
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Prompt",
-                  "description": "Provides both positive and negative conditioning in a single step.",
-                  "form": { "positive": "enhanced version, high quality", "negative": "low quality, artifacts" },
-                  "nodes": [
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["POSITIVE_CONDITIONING"],
-                      "formMapping": { "text": "positive" }
-                    },
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["NEGATIVE_CONDITIONING"],
-                      "formMapping": { "text": "negative" }
-                    }
-                  ]
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "KSampler",
-                  "form": {
-                    "seed": 0,
-                    "control_after_generate": "randomize",
-                    "steps": 20,
-                    "cfg": 7,
-                    "sampler_name": "dpmpp_2m",
-                    "scheduler": "karras",
-                    "denoise": 0.75
-                  }
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Preview",
-                  "description": "Performs VAEDecode and PreviewImage in a single step.",
-                  "form": {},
-                  "nodes": [
-                    { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-                    { "type": "PreviewImage", "outputs": [], "formMapping": {} }
-                  ]
-                }
-              ]
-            },
-            "sdxl_img2img": {
-              "metadata": {
-                "name": "SDXL Image to Image",
-                "description": "SDXL-based image transformation with higher quality",
-                "difficulty": "intermediate",
-                "estimated_time": "45-60 seconds",
-                "example_prompts": ["photorealistic enhancement", "artistic style transfer", "detailed improvement"]
-              },
-              "workflow": [
-                {
-                  "type": "Node",
-                  "nodeType": "CheckpointLoaderSimple",
-                  "form": { "ckpt_name": "zavychromaxl_v90.safetensors" }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "LoadImage",
-                  "form": { "image": "example.png" }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "VAEEncode",
-                  "form": {}
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Prompt",
-                  "description": "Provides both positive and negative conditioning in a single step.",
-                  "form": { "positive": "photorealistic enhancement, high quality, detailed", "negative": "low quality, blurry, artifacts" },
-                  "nodes": [
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["POSITIVE_CONDITIONING"],
-                      "formMapping": { "text": "positive" }
-                    },
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["NEGATIVE_CONDITIONING"],
-                      "formMapping": { "text": "negative" }
-                    }
-                  ]
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "KSampler",
-                  "form": {
-                    "seed": 0,
-                    "control_after_generate": "randomize",
-                    "steps": 25,
-                    "cfg": 8,
-                    "sampler_name": "dpmpp_2m",
-                    "scheduler": "karras",
-                    "denoise": 0.7
-                  }
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Preview",
-                  "description": "Performs VAEDecode and PreviewImage in a single step.",
-                  "form": {},
-                  "nodes": [
-                    { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-                    { "type": "PreviewImage", "outputs": [], "formMapping": {} }
-                  ]
-                }
-              ]
-            },
-            "sd15_img2img": {
-              "metadata": {
-                "name": "SD 1.5 Image to Image",
-                "description": "Classic SD 1.5 image transformation - fast and reliable",
-                "difficulty": "beginner",
-                "estimated_time": "30-45 seconds",
-                "example_prompts": ["style change", "color adjustment", "simple enhancement"]
-              },
-              "workflow": [
-                {
-                  "type": "Node",
-                  "nodeType": "CheckpointLoaderSimple",
-                  "form": { "ckpt_name": "v1-5-pruned-emaonly.ckpt" }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "LoadImage",
-                  "form": { "image": "example.png" }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "VAEEncode",
-                  "form": {}
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Prompt",
-                  "description": "Provides both positive and negative conditioning in a single step.",
-                  "form": { "positive": "style change, improved", "negative": "ugly, deformed" },
-                  "nodes": [
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["POSITIVE_CONDITIONING"],
-                      "formMapping": { "text": "positive" }
-                    },
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["NEGATIVE_CONDITIONING"],
-                      "formMapping": { "text": "negative" }
-                    }
-                  ]
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "KSampler",
-                  "form": {
-                    "seed": 0,
-                    "control_after_generate": "randomize",
-                    "steps": 20,
-                    "cfg": 7,
-                    "sampler_name": "euler",
-                    "scheduler": "normal",
-                    "denoise": 0.6
-                  }
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Preview",
-                  "description": "Performs VAEDecode and PreviewImage in a single step.",
-                  "form": {},
-                  "nodes": [
-                    { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-                    { "type": "PreviewImage", "outputs": [], "formMapping": {} }
-                  ]
-                }
-              ]
-            }
-          }
-        },
-        "upscaling": {
-          "name": "🔍 Upscaling & Enhancement",
-          "description": "Improve image quality and resolution",
-          "templates": {
-            "upscale_enhance": {
-              "metadata": {
-                "name": "Upscale & Enhance",
-                "description": "Upscale and enhance image quality",
-                "difficulty": "intermediate",
-                "estimated_time": "45-90 seconds",
-                "example_prompts": ["high quality, detailed, sharp", "enhanced resolution", "professional quality"]
-              },
-              "workflow": [
-                {
-                  "type": "Node",
-                  "nodeType": "CheckpointLoaderSimple",
-                  "form": { "ckpt_name": "zavychromaxl_v90.safetensors" }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "LoadImage",
-                  "form": { "image": "example.png" }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "ImageUpscaleWithModel",
-                  "form": { "upscale_model": "RealESRGAN_x4plus.pth" }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "VAEEncode",
-                  "form": {}
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Prompt",
-                  "description": "Provides both positive and negative conditioning in a single step.",
-                  "form": { "positive": "high quality, detailed, sharp", "negative": "blurry, low quality, artifacts" },
-                  "nodes": [
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["POSITIVE_CONDITIONING"],
-                      "formMapping": { "text": "positive" }
-                    },
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["NEGATIVE_CONDITIONING"],
-                      "formMapping": { "text": "negative" }
-                    }
-                  ]
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "KSampler",
-                  "form": {
-                    "seed": 0,
-                    "control_after_generate": "randomize",
-                    "steps": 15,
-                    "cfg": 6,
-                    "sampler_name": "dpmpp_2m",
-                    "scheduler": "karras",
-                    "denoise": 0.4
-                  }
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Preview",
-                  "description": "Performs VAEDecode and PreviewImage in a single step.",
-                  "form": {},
-                  "nodes": [
-                    { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-                    { "type": "PreviewImage", "outputs": [], "formMapping": {} }
-                  ]
-                }
-              ]
-            },
-            "latent_upscaling": {
-              "metadata": {
-                "name": "Latent Upscaling",
-                "description": "High-quality latent space upscaling for superior results",
-                "difficulty": "intermediate",
-                "estimated_time": "60-90 seconds",
-                "example_prompts": ["ultra high quality", "sharp details", "professional enhancement"]
-              },
-              "workflow": [
-                {
-                  "type": "Node",
-                  "nodeType": "CheckpointLoaderSimple",
-                  "form": { "ckpt_name": "zavychromaxl_v90.safetensors" }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "LoadImage",
-                  "form": { "image": "example.png" }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "VAEEncode",
-                  "form": {}
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "LatentUpscale",
-                  "form": { "upscale_method": "nearest-exact", "width": 2048, "height": 2048, "crop": "disabled" }
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Prompt",
-                  "description": "Provides both positive and negative conditioning in a single step.",
-                  "form": { "positive": "ultra high quality, sharp details, professional enhancement", "negative": "blurry, pixelated, low quality, artifacts" },
-                  "nodes": [
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["POSITIVE_CONDITIONING"],
-                      "formMapping": { "text": "positive" }
-                    },
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["NEGATIVE_CONDITIONING"],
-                      "formMapping": { "text": "negative" }
-                    }
-                  ]
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "KSampler",
-                  "form": {
-                    "seed": 0,
-                    "control_after_generate": "randomize",
-                    "steps": 20,
-                    "cfg": 7,
-                    "sampler_name": "dpmpp_2m",
-                    "scheduler": "karras",
-                    "denoise": 0.3
-                  }
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Preview",
-                  "description": "Performs VAEDecode and PreviewImage in a single step.",
-                  "form": {},
-                  "nodes": [
-                    { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-                    { "type": "PreviewImage", "outputs": [], "formMapping": {} }
-                  ]
-                }
-              ]
-            }
-          }
-        },
-        "batch": {
-          "name": "📦 Batch Processing",
-          "description": "Generate multiple images at once",
-          "templates": {
-            "batch_generation": {
-              "metadata": {
-                "name": "Batch Generation",
-                "description": "Generate multiple variations in one run",
-                "difficulty": "beginner",
-                "estimated_time": "2-5 minutes",
-                "example_prompts": ["varied scenes", "multiple concepts", "batch variations"]
-              },
-              "workflow": [
-                {
-                  "type": "Node",
-                  "nodeType": "CheckpointLoaderSimple",
-                  "form": { "ckpt_name": "zavychromaxl_v90.safetensors" }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "EmptyLatentImage",
-                  "form": { "width": 1024, "height": 1024, "batch_size": 4 }
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Prompt",
-                  "description": "Provides both positive and negative conditioning in a single step.",
-                  "form": { "positive": "varied scenes, high quality", "negative": "low quality, duplicates" },
-                  "nodes": [
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["POSITIVE_CONDITIONING"],
-                      "formMapping": { "text": "positive" }
-                    },
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["NEGATIVE_CONDITIONING"],
-                      "formMapping": { "text": "negative" }
-                    }
-                  ]
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "KSampler",
-                  "form": {
-                    "seed": 0,
-                    "control_after_generate": "increment",
-                    "steps": 25,
-                    "cfg": 7,
-                    "sampler_name": "dpmpp_2m",
-                    "scheduler": "karras",
-                    "denoise": 1
-                  }
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Preview",
-                  "description": "Performs VAEDecode and PreviewImage in a single step.",
-                  "form": {},
-                  "nodes": [
-                    { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-                    { "type": "PreviewImage", "outputs": [], "formMapping": {} }
-                  ]
-                }
-              ]
-            }
-          }
-        },
-        "advanced": {
-          "name": "⚡ Advanced",
-          "description": "Complex workflows for experienced users",
-          "templates": {
-            "sdxl_lora": {
-              "metadata": {
-                "name": "SDXL + LoRA",
-                "description": "SDXL with LoRA enhancement",
-                "difficulty": "advanced",
-                "estimated_time": "1-2 minutes",
-                "example_prompts": ["detailed portrait", "character art", "specific style"]
-              },
-              "workflow": [
-                {
-                  "type": "Node",
-                  "nodeType": "CheckpointLoaderSimple",
-                  "form": { "ckpt_name": "zavychromaxl_v90.safetensors" }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "LoraLoader",
-                  "form": { "lora_name": "add_detail.safetensors", "strength_model": 1, "strength_clip": 1 }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "EmptyLatentImage",
-                  "form": { "width": 1024, "height": 1024, "batch_size": 1 }
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Prompt",
-                  "description": "Provides both positive and negative conditioning in a single step.",
-                  "form": { "positive": "detailed portrait", "negative": "" },
-                  "nodes": [
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["POSITIVE_CONDITIONING"],
-                      "formMapping": { "text": "positive" }
-                    },
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["NEGATIVE_CONDITIONING"],
-                      "formMapping": { "text": "negative" }
-                    }
-                  ]
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "KSampler",
-                  "form": {
-                    "seed": 0,
-                    "control_after_generate": "randomize",
-                    "steps": 25,
-                    "cfg": 8,
-                    "sampler_name": "dpmpp_2m",
-                    "scheduler": "karras",
-                    "denoise": 1
-                  }
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Preview",
-                  "description": "Performs VAEDecode and PreviewImage in a single step.",
-                  "form": {},
-                  "nodes": [
-                    { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-                    { "type": "PreviewImage", "outputs": [], "formMapping": {} }
-                  ]
-                }
-              ]
-            },
-            "inpainting": {
-              "metadata": {
-                "name": "Inpainting",
-                "description": "Fill or replace parts of an image",
-                "difficulty": "advanced",
-                "estimated_time": "45-90 seconds",
-                "example_prompts": ["seamless replacement", "object removal", "background change"]
-              },
-              "workflow": [
-                {
-                  "type": "Node",
-                  "nodeType": "CheckpointLoaderSimple",
-                  "form": { "ckpt_name": "zavychromaxl_v90.safetensors" }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "LoadImage",
-                  "form": { "image": "example.png" }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "LoadImageMask",
-                  "form": { "image": "mask.png", "channel": "red" }
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "VAEEncodeForInpaint",
-                  "form": { "grow_mask_by": 6 }
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Prompt",
-                  "description": "Provides both positive and negative conditioning in a single step.",
-                  "form": { "positive": "seamless replacement", "negative": "visible seams, artifacts" },
-                  "nodes": [
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["POSITIVE_CONDITIONING"],
-                      "formMapping": { "text": "positive" }
-                    },
-                    {
-                      "type": "CLIPTextEncode",
-                      "outputs": ["NEGATIVE_CONDITIONING"],
-                      "formMapping": { "text": "negative" }
-                    }
-                  ]
-                },
-                {
-                  "type": "Node",
-                  "nodeType": "KSampler",
-                  "form": {
-                    "seed": 0,
-                    "control_after_generate": "randomize",
-                    "steps": 25,
-                    "cfg": 8,
-                    "sampler_name": "dpmpp_2m",
-                    "scheduler": "karras",
-                    "denoise": 1
-                  }
-                },
-                {
-                  "type": "Aggregate",
-                  "name": "Preview",
-                  "description": "Performs VAEDecode and PreviewImage in a single step.",
-                  "form": {},
-                  "nodes": [
-                    { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-                    { "type": "PreviewImage", "outputs": [], "formMapping": {} }
-                  ]
-                }
-              ]
-            }
-          }
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["NEGATIVE_CONDITIONING"],
+          "formMapping": { "text": "negative" }
         }
+      ]
+    },
+    {
+      "type": "Node",
+      "nodeType": "KSampler",
+      "form": {
+        "seed": 0,
+        "control_after_generate": "randomize",
+        "steps": 25,
+        "cfg": 7,
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "denoise": 1
       }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Preview",
+      "description": "Performs VAEDecode and PreviewImage in a single step.",
+      "form": {},
+      "nodes": [
+        { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
+        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+      ]
     }
-  }
+  ],
+  "SD 1.5 Classic": [
+    {
+      "type": "Node",
+      "nodeType": "CheckpointLoaderSimple",
+      "form": { "ckpt_name": "v1-5-pruned-emaonly.ckpt" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "EmptyLatentImage",
+      "form": { "width": 512, "height": 512, "batch_size": 1 }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Prompt",
+      "description": "Provides both positive and negative conditioning in a single step.",
+      "form": { "positive": "portrait", "negative": "" },
+      "nodes": [
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["POSITIVE_CONDITIONING"],
+          "formMapping": { "text": "positive" }
+        },
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["NEGATIVE_CONDITIONING"],
+          "formMapping": { "text": "negative" }
+        }
+      ]
+    },
+    {
+      "type": "Node",
+      "nodeType": "KSampler",
+      "form": {
+        "seed": 0,
+        "control_after_generate": "randomize",
+        "steps": 20,
+        "cfg": 7,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 1
+      }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Preview",
+      "description": "Performs VAEDecode and PreviewImage in a single step.",
+      "form": {},
+      "nodes": [
+        { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
+        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+      ]
+    }
+  ],
+  "Flux GGUF": [
+    {
+      "type": "Node",
+      "nodeType": "EmptyLatentImage",
+      "form": { "width": "1024", "height": "1024", "batch_size": 1 }
+    },
+    {
+      "type": "Node",
+      "nodeType": "VAELoader",
+      "form": { "vae_name": "flux.safetensors" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "UnetLoaderGGUF",
+      "form": { "unet_name": "flux1-dev-Q8_0.gguf" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "DualCLIPLoaderGGUF",
+      "form": {
+        "clip_name1": "t5-v1_1-xxl-encoder-Q8_0.gguf",
+        "clip_name2": "clip_l.safetensors",
+        "type": "flux"
+      }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Prompt",
+      "description": "Provides both positive and negative conditioning in a single step.",
+      "form": { "positive": "astronaut", "negative": "" },
+      "nodes": [
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["POSITIVE_CONDITIONING"],
+          "formMapping": { "text": "positive" }
+        },
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["NEGATIVE_CONDITIONING"],
+          "formMapping": { "text": "negative" }
+        }
+      ]
+    },
+    {
+      "type": "Node",
+      "nodeType": "KSampler",
+      "form": {
+        "seed": "0",
+        "control_after_generate": "randomize",
+        "steps": "24",
+        "cfg": "1",
+        "sampler_name": "euler",
+        "scheduler": "beta",
+        "denoise": 1
+      }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Preview",
+      "description": "Performs VAEDecode and PreviewImage in a single step.",
+      "form": {},
+      "nodes": [
+        { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
+        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+      ]
+    }
+  ],
+  "Basic Image to Image": [
+    {
+      "type": "Node",
+      "nodeType": "CheckpointLoaderSimple",
+      "form": { "ckpt_name": "zavychromaxl_v90.safetensors" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "LoadImage",
+      "form": { "image": "example.png" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "VAEEncode",
+      "form": {}
+    },
+    {
+      "type": "Aggregate",
+      "name": "Prompt",
+      "description": "Provides both positive and negative conditioning in a single step.",
+      "form": { "positive": "enhanced version, high quality", "negative": "low quality, artifacts" },
+      "nodes": [
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["POSITIVE_CONDITIONING"],
+          "formMapping": { "text": "positive" }
+        },
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["NEGATIVE_CONDITIONING"],
+          "formMapping": { "text": "negative" }
+        }
+      ]
+    },
+    {
+      "type": "Node",
+      "nodeType": "KSampler",
+      "form": {
+        "seed": 0,
+        "control_after_generate": "randomize",
+        "steps": 20,
+        "cfg": 7,
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "denoise": 0.75
+      }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Preview",
+      "description": "Performs VAEDecode and PreviewImage in a single step.",
+      "form": {},
+      "nodes": [
+        { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
+        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+      ]
+    }
+  ],
+  "SDXL Image to Image": [
+    {
+      "type": "Node",
+      "nodeType": "CheckpointLoaderSimple",
+      "form": { "ckpt_name": "zavychromaxl_v90.safetensors" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "LoadImage",
+      "form": { "image": "example.png" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "VAEEncode",
+      "form": {}
+    },
+    {
+      "type": "Aggregate",
+      "name": "Prompt",
+      "description": "Provides both positive and negative conditioning in a single step.",
+      "form": { "positive": "photorealistic enhancement, high quality, detailed", "negative": "low quality, blurry, artifacts" },
+      "nodes": [
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["POSITIVE_CONDITIONING"],
+          "formMapping": { "text": "positive" }
+        },
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["NEGATIVE_CONDITIONING"],
+          "formMapping": { "text": "negative" }
+        }
+      ]
+    },
+    {
+      "type": "Node",
+      "nodeType": "KSampler",
+      "form": {
+        "seed": 0,
+        "control_after_generate": "randomize",
+        "steps": 25,
+        "cfg": 8,
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "denoise": 0.7
+      }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Preview",
+      "description": "Performs VAEDecode and PreviewImage in a single step.",
+      "form": {},
+      "nodes": [
+        { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
+        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+      ]
+    }
+  ],
+  "SD 1.5 Image to Image": [
+    {
+      "type": "Node",
+      "nodeType": "CheckpointLoaderSimple",
+      "form": { "ckpt_name": "v1-5-pruned-emaonly.ckpt" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "LoadImage",
+      "form": { "image": "example.png" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "VAEEncode",
+      "form": {}
+    },
+    {
+      "type": "Aggregate",
+      "name": "Prompt",
+      "description": "Provides both positive and negative conditioning in a single step.",
+      "form": { "positive": "style change, improved", "negative": "ugly, deformed" },
+      "nodes": [
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["POSITIVE_CONDITIONING"],
+          "formMapping": { "text": "positive" }
+        },
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["NEGATIVE_CONDITIONING"],
+          "formMapping": { "text": "negative" }
+        }
+      ]
+    },
+    {
+      "type": "Node",
+      "nodeType": "KSampler",
+      "form": {
+        "seed": 0,
+        "control_after_generate": "randomize",
+        "steps": 20,
+        "cfg": 7,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 0.6
+      }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Preview",
+      "description": "Performs VAEDecode and PreviewImage in a single step.",
+      "form": {},
+      "nodes": [
+        { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
+        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+      ]
+    }
+  ],
+  "Upscale & Enhance": [
+    {
+      "type": "Node",
+      "nodeType": "CheckpointLoaderSimple",
+      "form": { "ckpt_name": "zavychromaxl_v90.safetensors" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "LoadImage",
+      "form": { "image": "example.png" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "ImageUpscaleWithModel",
+      "form": { "upscale_model": "RealESRGAN_x4plus.pth" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "VAEEncode",
+      "form": {}
+    },
+    {
+      "type": "Aggregate",
+      "name": "Prompt",
+      "description": "Provides both positive and negative conditioning in a single step.",
+      "form": { "positive": "high quality, detailed, sharp", "negative": "blurry, low quality, artifacts" },
+      "nodes": [
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["POSITIVE_CONDITIONING"],
+          "formMapping": { "text": "positive" }
+        },
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["NEGATIVE_CONDITIONING"],
+          "formMapping": { "text": "negative" }
+        }
+      ]
+    },
+    {
+      "type": "Node",
+      "nodeType": "KSampler",
+      "form": {
+        "seed": 0,
+        "control_after_generate": "randomize",
+        "steps": 15,
+        "cfg": 6,
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "denoise": 0.4
+      }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Preview",
+      "description": "Performs VAEDecode and PreviewImage in a single step.",
+      "form": {},
+      "nodes": [
+        { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
+        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+      ]
+    }
+  ],
+  "Latent Upscaling": [
+    {
+      "type": "Node",
+      "nodeType": "CheckpointLoaderSimple",
+      "form": { "ckpt_name": "zavychromaxl_v90.safetensors" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "LoadImage",
+      "form": { "image": "example.png" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "VAEEncode",
+      "form": {}
+    },
+    {
+      "type": "Node",
+      "nodeType": "LatentUpscale",
+      "form": { "upscale_method": "nearest-exact", "width": 2048, "height": 2048, "crop": "disabled" }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Prompt",
+      "description": "Provides both positive and negative conditioning in a single step.",
+      "form": { "positive": "ultra high quality, sharp details, professional enhancement", "negative": "blurry, pixelated, low quality, artifacts" },
+      "nodes": [
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["POSITIVE_CONDITIONING"],
+          "formMapping": { "text": "positive" }
+        },
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["NEGATIVE_CONDITIONING"],
+          "formMapping": { "text": "negative" }
+        }
+      ]
+    },
+    {
+      "type": "Node",
+      "nodeType": "KSampler",
+      "form": {
+        "seed": 0,
+        "control_after_generate": "randomize",
+        "steps": 20,
+        "cfg": 7,
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "denoise": 0.3
+      }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Preview",
+      "description": "Performs VAEDecode and PreviewImage in a single step.",
+      "form": {},
+      "nodes": [
+        { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
+        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+      ]
+    }
+  ],
+  "Batch Generation": [
+    {
+      "type": "Node",
+      "nodeType": "CheckpointLoaderSimple",
+      "form": { "ckpt_name": "zavychromaxl_v90.safetensors" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "EmptyLatentImage",
+      "form": { "width": 1024, "height": 1024, "batch_size": 4 }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Prompt",
+      "description": "Provides both positive and negative conditioning in a single step.",
+      "form": { "positive": "varied scenes, high quality", "negative": "low quality, duplicates" },
+      "nodes": [
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["POSITIVE_CONDITIONING"],
+          "formMapping": { "text": "positive" }
+        },
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["NEGATIVE_CONDITIONING"],
+          "formMapping": { "text": "negative" }
+        }
+      ]
+    },
+    {
+      "type": "Node",
+      "nodeType": "KSampler",
+      "form": {
+        "seed": 0,
+        "control_after_generate": "increment",
+        "steps": 25,
+        "cfg": 7,
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "denoise": 1
+      }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Preview",
+      "description": "Performs VAEDecode and PreviewImage in a single step.",
+      "form": {},
+      "nodes": [
+        { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
+        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+      ]
+    }
+  ],
+  "SDXL + LoRA": [
+    {
+      "type": "Node",
+      "nodeType": "CheckpointLoaderSimple",
+      "form": { "ckpt_name": "zavychromaxl_v90.safetensors" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "LoraLoader",
+      "form": { "lora_name": "add_detail.safetensors", "strength_model": 1, "strength_clip": 1 }
+    },
+    {
+      "type": "Node",
+      "nodeType": "EmptyLatentImage",
+      "form": { "width": 1024, "height": 1024, "batch_size": 1 }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Prompt",
+      "description": "Provides both positive and negative conditioning in a single step.",
+      "form": { "positive": "detailed portrait", "negative": "" },
+      "nodes": [
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["POSITIVE_CONDITIONING"],
+          "formMapping": { "text": "positive" }
+        },
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["NEGATIVE_CONDITIONING"],
+          "formMapping": { "text": "negative" }
+        }
+      ]
+    },
+    {
+      "type": "Node",
+      "nodeType": "KSampler",
+      "form": {
+        "seed": 0,
+        "control_after_generate": "randomize",
+        "steps": 25,
+        "cfg": 8,
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "denoise": 1
+      }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Preview",
+      "description": "Performs VAEDecode and PreviewImage in a single step.",
+      "form": {},
+      "nodes": [
+        { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
+        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+      ]
+    }
+  ],
+  "Inpainting": [
+    {
+      "type": "Node",
+      "nodeType": "CheckpointLoaderSimple",
+      "form": { "ckpt_name": "zavychromaxl_v90.safetensors" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "LoadImage",
+      "form": { "image": "example.png" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "LoadImageMask",
+      "form": { "image": "mask.png", "channel": "red" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "VAEEncodeForInpaint",
+      "form": { "grow_mask_by": 6 }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Prompt",
+      "description": "Provides both positive and negative conditioning in a single step.",
+      "form": { "positive": "seamless replacement", "negative": "visible seams, artifacts" },
+      "nodes": [
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["POSITIVE_CONDITIONING"],
+          "formMapping": { "text": "positive" }
+        },
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["NEGATIVE_CONDITIONING"],
+          "formMapping": { "text": "negative" }
+        }
+      ]
+    },
+    {
+      "type": "Node",
+      "nodeType": "KSampler",
+      "form": {
+        "seed": 0,
+        "control_after_generate": "randomize",
+        "steps": 25,
+        "cfg": 8,
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "denoise": 1
+      }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Preview",
+      "description": "Performs VAEDecode and PreviewImage in a single step.",
+      "form": {},
+      "nodes": [
+        { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
+        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+      ]
+    }
+  ],
+  "Multi-LoRA Style Fusion": [
+    {
+      "type": "Node",
+      "nodeType": "CheckpointLoaderSimple",
+      "form": { "ckpt_name": "zavychromaxl_v90.safetensors" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "LoraLoader",
+      "form": { "lora_name": "add_detail.safetensors", "strength_model": 0.8, "strength_clip": 0.8 }
+    },
+    {
+      "type": "Node",
+      "nodeType": "LoraLoader",
+      "form": { "lora_name": "style_enhancer.safetensors", "strength_model": 0.6, "strength_clip": 0.6 }
+    },
+    {
+      "type": "Node",
+      "nodeType": "LoraLoader",
+      "form": { "lora_name": "character_lora.safetensors", "strength_model": 0.4, "strength_clip": 0.4 }
+    },
+    {
+      "type": "Node",
+      "nodeType": "EmptyLatentImage",
+      "form": { "width": 1024, "height": 1024, "batch_size": 1 }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Prompt",
+      "description": "Provides both positive and negative conditioning in a single step.",
+      "form": { "positive": "artistic portrait with multiple styles, masterpiece, high quality", "negative": "low quality, blurry, artifacts" },
+      "nodes": [
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["POSITIVE_CONDITIONING"],
+          "formMapping": { "text": "positive" }
+        },
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["NEGATIVE_CONDITIONING"],
+          "formMapping": { "text": "negative" }
+        }
+      ]
+    },
+    {
+      "type": "Node",
+      "nodeType": "KSampler",
+      "form": {
+        "seed": 0,
+        "control_after_generate": "randomize",
+        "steps": 30,
+        "cfg": 8.5,
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "denoise": 1
+      }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Preview",
+      "description": "Performs VAEDecode and PreviewImage in a single step.",
+      "form": {},
+      "nodes": [
+        { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
+        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+      ]
+    }
+  ],
+  "ControlNet Pose Control": [
+    {
+      "type": "Node",
+      "nodeType": "CheckpointLoaderSimple",
+      "form": { "ckpt_name": "zavychromaxl_v90.safetensors" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "LoadImage",
+      "form": { "image": "pose_reference.png" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "ControlNetLoader",
+      "form": { "control_net_name": "control_v11p_sd15_openpose.pth" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "ControlNetApply",
+      "form": { "strength": 1.0 }
+    },
+    {
+      "type": "Node",
+      "nodeType": "EmptyLatentImage",
+      "form": { "width": 1024, "height": 1024, "batch_size": 1 }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Prompt",
+      "description": "Provides both positive and negative conditioning in a single step.",
+      "form": { "positive": "person dancing, dynamic pose, high quality", "negative": "static, stiff, low quality" },
+      "nodes": [
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["POSITIVE_CONDITIONING"],
+          "formMapping": { "text": "positive" }
+        },
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["NEGATIVE_CONDITIONING"],
+          "formMapping": { "text": "negative" }
+        }
+      ]
+    },
+    {
+      "type": "Node",
+      "nodeType": "KSampler",
+      "form": {
+        "seed": 0,
+        "control_after_generate": "randomize",
+        "steps": 25,
+        "cfg": 8,
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "denoise": 1
+      }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Preview",
+      "description": "Performs VAEDecode and PreviewImage in a single step.",
+      "form": {},
+      "nodes": [
+        { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
+        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+      ]
+    }
+  ],
+  "Professional Portrait": [
+    {
+      "type": "Node",
+      "nodeType": "CheckpointLoaderSimple",
+      "form": { "ckpt_name": "zavychromaxl_v90.safetensors" }
+    },
+    {
+      "type": "Node",
+      "nodeType": "LoraLoader",
+      "form": { "lora_name": "add_detail.safetensors", "strength_model": 0.6, "strength_clip": 0.6 }
+    },
+    {
+      "type": "Node",
+      "nodeType": "EmptyLatentImage",
+      "form": { "width": 768, "height": 1024, "batch_size": 1 }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Prompt",
+      "description": "Provides both positive and negative conditioning in a single step.",
+      "form": { "positive": "professional headshot, studio lighting, sharp focus, business attire, confident expression, high quality", "negative": "amateur, poor lighting, blurry, casual clothes, bad expression, low quality" },
+      "nodes": [
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["POSITIVE_CONDITIONING"],
+          "formMapping": { "text": "positive" }
+        },
+        {
+          "type": "CLIPTextEncode",
+          "outputs": ["NEGATIVE_CONDITIONING"],
+          "formMapping": { "text": "negative" }
+        }
+      ]
+    },
+    {
+      "type": "Node",
+      "nodeType": "KSampler",
+      "form": {
+        "seed": 0,
+        "control_after_generate": "randomize",
+        "steps": 28,
+        "cfg": 7.5,
+        "sampler_name": "dpmpp_2m",
+        "scheduler": "karras",
+        "denoise": 1
+      }
+    },
+    {
+      "type": "Aggregate",
+      "name": "Preview",
+      "description": "Performs VAEDecode and PreviewImage in a single step.",
+      "form": {},
+      "nodes": [
+        { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
+        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+      ]
+    }
+  ]
 }
