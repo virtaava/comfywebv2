@@ -49,6 +49,8 @@ ComfyWeb v2 is an enhanced version of the original [ComfyWeb](https://github.com
 ### Prerequisites
 
 #### Install ComfyUI
+**If you already have ComfyUI installed, skip to [Install Node.js](#install-nodejs)**
+
 **Windows:**
 ```cmd
 # Clone ComfyUI
@@ -80,6 +82,8 @@ pip install -r requirements.txt
 ```
 
 #### Install Node.js
+**If you already have Node.js installed, skip to [Install ComfyWeb v2](#install-comfyweb-v2)**
+
 - Download and install [Node.js](https://nodejs.org/) (v16 or higher)
 - Verify installation: `node --version` and `npm --version`
 
@@ -113,6 +117,7 @@ npm run dev
 ```
 
 ### Running Both Systems
+**If both ComfyUI and ComfyWeb v2 are already installed, start here**
 
 #### Start ComfyUI (First Terminal)
 **Windows:**
@@ -149,25 +154,40 @@ Create these scripts to start both systems automatically:
 **Windows**: `launch-comfyweb-v2.bat`
 ```batch
 @echo off
-echo Starting ComfyUI...
-start /B cmd /c "cd /d C:\path\to\ComfyUI && venv\Scripts\activate && python main.py --enable-cors-header '*'"
+echo 🔧 Starting ComfyUI...
+REM Start ComfyUI in a new background Command Prompt
+start "" cmd /k "cd /d C:\path\to\ComfyUI && call venv\Scripts\activate && python main.py --enable-cors-header '*'"
+REM Give ComfyUI a few seconds to start
 timeout /t 5
-echo Starting ComfyWeb v2...
+echo 🚀 Starting ComfyWeb v2...
 cd /d "C:\path\to\comfywebv2"
-npm run dev
+call npm run dev
+pause
 ```
 
 **Linux/Mac**: `launch-comfyweb-v2.sh`
 ```bash
 #!/bin/bash
-echo "Starting ComfyUI..."
-cd /path/to/ComfyUI
-source venv/bin/activate
-python main.py --enable-cors-header '*' &
+echo "🔧 Starting ComfyUI..."
+# Start ComfyUI in a new terminal window (background)
+if command -v gnome-terminal &> /dev/null; then
+    gnome-terminal -- bash -c "cd /path/to/ComfyUI && source venv/bin/activate && python main.py --enable-cors-header '*'; exec bash"
+elif command -v xterm &> /dev/null; then
+    xterm -e "cd /path/to/ComfyUI && source venv/bin/activate && python main.py --enable-cors-header '*'; exec bash" &
+else
+    # Fallback: start in background
+    cd /path/to/ComfyUI
+    source venv/bin/activate
+    python main.py --enable-cors-header '*' &
+    cd -
+fi
+# Give ComfyUI a few seconds to start
 sleep 5
-echo "Starting ComfyWeb v2..."
+echo "🚀 Starting ComfyWeb v2..."
 cd /path/to/comfywebv2
 npm run dev
+echo "Press Enter to exit..."
+read
 ```
 
 Make the script executable on Linux/Mac:
