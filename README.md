@@ -1,264 +1,230 @@
 # ComfyWeb v2 - Enhanced Workflow Interface
 
-ComfyWeb v2 is an enhanced interface for ComfyUI that replaces complex node graphs with intuitive HTML forms while maintaining full compatibility with ComfyUI workflows.
+**Professional ComfyUI workflow management with advanced features, bug fixes, and intuitive interface.**
 
-## Features
+![ComfyWeb v2 Header](https://img.shields.io/badge/ComfyWeb-v2.0-purple?style=for-the-badge) ![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge) ![ComfyUI](https://img.shields.io/badge/ComfyUI-Compatible-green?style=for-the-badge)
 
-### 🎯 **Core Functionality**
-- **Simple and intuitive interface** with HTML forms instead of graphs! You can easily create and edit workflows without having to worry about the underlying graph structure.
-- **Unified gallery view** that allows you to easily preview, edit and manage both generated images as well as anything that's pending in the queue.
-- **Drag and drop support** for ComfyUI images and workflows - they are automatically converted to a simple sequence of forms (some complex graphs might be rejected). Images generated with ComfyWeb can be loaded with ComfyUI (although they're not guaranteed to be pretty!).
+## 🌟 Overview
 
-### ✨ **Enhanced Features (v2)**
-- **Local Workflow Storage**: Save and load workflows directly in your browser
-- **Missing Node Detection**: Automatic detection of required custom nodes with installation UI
-- **Enhanced Error Handling**: Fixed critical bugs and improved workflow validation  
-- **Professional Dark Theme**: Modern, responsive interface with improved typography
-- **Template System**: Quick-start templates for common workflows
-- **Single File Deployment**: Builds to one HTML file for easy sharing
+ComfyWeb v2 is an enhanced version of the original [ComfyWeb](https://github.com/jac3km4/comfyweb) by [@jac3km4](https://github.com/jac3km4), transforming ComfyUI's complex node-graph system into an intuitive, form-based workflow interface with professional-grade features.
 
-## 🚀 Quick Installation (Recommended)
+### ✨ What Makes v2 Special
 
-### **One-Click Setup Scripts**
+- **🐛 Critical Bug Fixes**: Resolves workflow import crashes present in the original
+- **🎨 Professional UI**: Beautiful branding with enhanced user experience  
+- **💾 Browser Workflow Storage**: Save/load workflows with browser persistence
+- **🖼️ Session Gallery**: Real-time generated image gallery with workflow reloading
+- **📁 ComfyUI Compatibility**: Standard format workflows that work everywhere
+- **⚡ Enhanced Performance**: Improved error handling and validation
 
-**Windows Users:**
-```cmd
-# Download and run the complete installer
-curl -O https://raw.githubusercontent.com/virtaava/comfywebv2/main/install-windows.bat
-install-windows.bat
-```
+## 📊 ComfyWeb v2 vs Original Comparison
 
-**Linux/macOS Users:**
+| Feature | Original ComfyWeb | ComfyWeb v2 |
+|---------|-------------------|-------------|
+| **Workflow Import** | ❌ Crashes with `TypeError` | ✅ Fixed + Enhanced validation |
+| **Browser Storage** | ❌ No persistence | ✅ Save/load workflows locally |
+| **Gallery System** | ❌ Basic display | ✅ Professional session gallery |
+| **UI Design** | ⚠️ Basic interface | ✅ Professional branding + UX |
+| **Error Handling** | ⚠️ Basic | ✅ Comprehensive debugging |
+| **Image Previews** | ⚠️ Basic | ✅ Professional upload with previews |
+| **File Compatibility** | ✅ ComfyUI workflows | ✅ Enhanced ComfyUI compatibility |
+| **Session Recovery** | ❌ Lost on refresh | ✅ Workflow & gallery persistence |
+
+## 🚀 Quick Start
+
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v16 or higher)
+- [ComfyUI](https://github.com/comfyanonymous/ComfyUI) installed and running
+
+### Installation
+
+#### Build from Source (Currently Available)
 ```bash
-# Download and run the complete installer
-curl -O https://raw.githubusercontent.com/virtaava/comfywebv2/main/install-linux.sh
-chmod +x install-linux.sh
-./install-linux.sh
-```
-
-### **What the installer does:**
-- ✅ Checks for Python 3.8+, Git, and Node.js 18+
-- ✅ Downloads and installs ComfyUI with all dependencies
-- ✅ Installs ComfyUI Manager (for custom nodes)
-- ✅ Downloads and builds ComfyWeb v2
-- ✅ Creates convenient launch scripts
-- ✅ Sets up everything in a `ComfyWebSetup` folder
-
-### **After installation:**
-```bash
-# Start both ComfyUI and ComfyWeb v2 together
-launch-both.bat        # Windows
-./launch-both.sh       # Linux/macOS
-```
-
-## 📋 Prerequisites
-
-The installation scripts will check for these automatically:
-
-**Required:**
-- **Python 3.8+** - For running ComfyUI
-- **Node.js 18+** - For building ComfyWeb v2
-- **Git** - For downloading repositories
-
-**GPU Support (Optional but Recommended):**
-- NVIDIA GPU with CUDA support for faster image generation
-- AMD GPU with ROCm support (Linux)
-
-## Screenshots
-<img src="https://github.com/virtaava/comfywebv2/blob/master/docs/Screenshot%202025-06-13%20125055.png" width="360px"/>
-<img src="https://github.com/virtaava/comfywebv2/blob/master/docs/Screenshot%202025-06-13%20125107.png" width="360px"/>
-
-## 🎮 How to Use ComfyWeb v2
-
-### **Interface Overview**
-
-**Left Panel - Workflow Editor:**
-- **Workflow Tab**: Create and edit your workflow steps
-- **Manage Tab**: Configure server settings and export workflows
-
-**Gallery Panel:**
-- **Generated Images**: View your created images
-- **Queue Status**: See generation progress in real-time
-- **Image Actions**: 
-  - 📁 **Import Icon** (left): Load the workflow used to generate this image
-  - 🗑️ **Trash Icon** (right): Delete this image from gallery
-- **Click to Enlarge**: View images in full screen
-- **Workflow Recovery**: Click the import icon to restore exact settings
-
-### **Getting Started**
-
-1. **Choose a Template:**
-   - Click the **"Add"** dropdown
-   - Select **"✅ Universal Templates"**
-   - Pick a category (Text to Image, Image to Image, etc.)
-   - Choose a template (⭐ = beginner friendly)
-
-2. **Customize Your Workflow:**
-   - Modify prompts in text areas
-   - Adjust settings (steps, CFG, sampler)
-   - Upload images for img2img workflows
-   - See image previews automatically
-
-3. **Generate Images:**
-   - Click the **"Generate"** button
-   - Watch progress in the gallery
-   - Images appear automatically when complete
-
-4. **Reuse Successful Workflows:**
-   - Click the **📁 import icon** on any generated image
-   - Your workflow will reload with those exact settings
-   - Modify and generate variations
-
-### **Template Categories**
-
-**📸 Text to Image (Beginner ⭐):**
-- **SDXL Basic**: Modern, high-quality generation
-- **SD 1.5 Classic**: Compatible with older GPUs
-- **SDXL + LoRA**: Style enhancement (requires LoRA files)
-
-**🖼️ Image to Image (Beginner ⭐):**
-- **SDXL img2img**: Transform existing images
-- **SD 1.5 img2img**: Classic image transformation
-- **Basic Inpainting** (Intermediate ⭐⭐): Fill masked areas
-
-**🔍 Upscaling & Enhancement:**
-- **Simple 4x Upscale** (Beginner ⭐): Quick enhancement
-- **Latent Upscale** (Intermediate ⭐⭐): AI-powered quality improvement
-
-**📦 Batch Processing:**
-- **Batch Generation**: Create multiple variations
-
-### **Workflow Persistence**
-- **Session Storage**: Your workflow automatically saves during browser session
-- **Manual Save**: Use "Save workflow" in Manage tab for permanent storage
-- **Auto-Restore**: Reload your browser - your work is preserved!
-
-### **Pro Tips**
-
-**For Best Results:**
-- Start with beginner templates (⭐) and experiment
-- Use the import icon to learn from successful generations
-- Save workflows you like using the "Save workflow" button
-- Adjust CFG (7-8 for most cases) and steps (20-30) for quality vs speed
-
-**Troubleshooting:**
-- If templates don't load: Check ComfyUI is running with CORS enabled
-- If images don't appear: Verify server address in Manage tab
-- If upload fails: Ensure image files are PNG, JPG, or WebP format
-
-## 🛠️ Manual Installation (Advanced Users)
-
-If you prefer to install manually or customize the setup:
-
-### 1. Install ComfyUI
-```bash
-git clone https://github.com/comfyanonymous/ComfyUI.git
-cd ComfyUI
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-pip install -r requirements.txt
-```
-
-### 2. Install ComfyWeb v2
-```bash
+# Clone repository
 git clone https://github.com/virtaava/comfywebv2.git
 cd comfywebv2
+
+# Install dependencies
 npm install
+
+# Development mode
+npm run dev
+
+# Build for production
 npm run build
 ```
 
-### 3. Launch Manually
+**Note**: NPM package and binary releases planned for future versions.
+
+### ComfyUI Setup
+ComfyUI must be running with CORS enabled:
 ```bash
-# Terminal 1: Start ComfyUI
-cd ComfyUI
-python main.py --enable-cors-header "*"
-
-# Terminal 2: Open ComfyWeb v2
-# Open comfywebv2/dist/index.html in your browser
+# Start ComfyUI with CORS support
+python main.py --enable-cors-header '*'
 ```
 
-## 🎯 Daily Usage
+### Example Launch Script
+Create your own launch script to automatically start ComfyUI and ComfyWeb v2:
 
-### **First Time Setup:**
-1. Run the installer script for your platform
-2. Use `launch-both` script to start everything
-3. ComfyWeb v2 will open in your browser automatically
-4. Configure ComfyUI server address if needed (usually http://127.0.0.1:8188)
+**Windows Example**: `launch-comfyweb-v2.bat`
+```batch
+@echo off
+echo Starting ComfyUI...
+start /B python "path\to\comfyui\main.py" --enable-cors-header '*'
+timeout /t 3
+echo Starting ComfyWeb v2...
+npm run dev
+```
 
-### **Daily Usage:**
-- **Quick Start**: Run `launch-both` script
-- **ComfyUI Only**: Run `launch-comfyui` script  
-- **ComfyWeb Only**: Run `launch-comfyweb` script (requires ComfyUI running)
-
-### **Remote Server:**
-If connecting to a remote ComfyUI server, configure the hostname in the 'Manage' tab.
-
-## 🔧 Development
-
-### Build from Source
+**Linux/Mac Example**: `launch-comfyweb-v2.sh`
 ```bash
-git clone https://github.com/virtaava/comfywebv2.git
-cd comfywebv2
-npm install
-npm run build          # Production build
-npm run dev            # Development server
+#!/bin/bash
+echo "Starting ComfyUI..."
+python3 /path/to/comfyui/main.py --enable-cors-header '*' &
+sleep 3
+echo "Starting ComfyWeb v2..."
+npm run dev
 ```
 
-### Project Structure
-```
-comfywebv2/
-├── src/               # Source code
-├── dist/              # Built application (index.html)
-├── install-*.sh/bat   # Installation scripts
-└── launch-*.sh/bat    # Launch scripts
-```
+## ✅ Current Features (Working)
 
-## 📋 Version History
+### 🛠️ Core Functionality
+- **✅ Workflow Creation**: Form-based workflow editor with drag-and-drop step reordering
+- **✅ Template System**: 11 professional templates (Text-to-Image, Image-to-Image, Upscaling, etc.)
+- **✅ Drag & Drop Import**: ComfyUI workflow JSON file import fully functional
+- **✅ Real-time Generation**: Live progress monitoring with WebSocket integration
+- **✅ Professional UI**: Dark theme, consistent styling, loading indicators
 
-### v2.0.0 (Enhanced Release)
-- ✅ **One-click installers** for Windows and Linux/macOS
-- ✅ **Complete automation** - installs ComfyUI + ComfyWeb v2
-- ✅ **Launch scripts** for easy daily usage
-- ✅ **Comprehensive template library** - 11 professional templates
-- ✅ **Image preview system** - See uploaded images in workflows
-- ✅ **Session persistence** - Work survives browser refresh
-- ✅ Fixed critical drag & drop workflow loading bug
-- ✅ Added local workflow storage system  
-- ✅ Implemented missing node detection UI
-- ✅ Enhanced error handling and debugging
-- ✅ Professional interface improvements
+### 🖼️ Gallery & Image Management
+- **✅ Session Gallery**: Real-time gallery of generated images with perfect functionality
+- **✅ Workflow Reloading**: Click gallery images to reload their generating workflows
+- **✅ Image Previews**: Professional image upload with immediate visual feedback for image-to-image workflows
+- **✅ Session Persistence**: Gallery images survive browser refresh/restart
+- **✅ Progress Tracking**: Real-time generation status with visual indicators
 
-### v0.0.4 (Original)
-- Basic ComfyUI workflow interface by [@jac3km4](https://github.com/jac3km4/comfyweb)
+### 💾 Workflow Management
+- **✅ Browser Storage**: Save workflows to browser localStorage with persistence
+- **✅ Save Dialog**: Professional save dialog with auto-generated names and descriptions
+- **✅ Load Workflows**: "My Workflows" section in Add dropdown for saved workflows
+- **✅ Workflow Export**: Download workflows as ComfyUI-compatible JSON files
+- **✅ Session Recovery**: Workflow state survives browser refresh
 
-## 🆘 Troubleshooting
+### 🔧 Error Handling & Debugging
+- **✅ Enhanced Error Handling**: Comprehensive debugging and validation with clear error messages
+- **⚠️ Missing Node Error Detection**: Shows missing custom nodes but errors auto-close quickly (improvement planned)
+- **✅ Type Safety**: Full TypeScript implementation with proper error boundaries
+- **✅ File Upload System**: Complete image upload to ComfyUI server with progress indicators
 
-### **Common Issues:**
+### 🎯 Fixed Critical Bugs
+- **✅ Workflow Import Crashes**: Fixed `TypeError: nodes is not iterable` that breaks official v0.0.4
+- **✅ Image Preview Issues**: Fixed image URL construction and upload functionality
+- **✅ Template System**: All 11 templates working properly
+- **✅ Type Safety**: Resolved TypeScript crashes from missing node types
 
-**"Command not found" errors:**
-- Make sure Python, Node.js, and Git are installed and in your PATH
-- Windows: Restart command prompt after installing
-- Linux/macOS: Restart terminal or source your profile
+## ⚠️ Features In Development
 
-**ComfyUI won't start:**
-- Check if port 8188 is already in use
-- Try: `python main.py --port 8189 --enable-cors-header "*"`
+### 🔄 Planned Enhancements
+- **📁 Output Folder Browsing**: Browse ComfyUI's output directory (requires additional setup due to browser security limitations)
+- **⚡ Pipeline Integration**: Gallery action icons for using images as inputs to next workflow stages
+- **🛑 Generation Control**: Stop/interrupt functionality via ComfyUI interrupt API
+- **🔧 Missing Node Error UX**: Keep error messages open until manually dismissed, add copy functionality for node names
+- **📂 Workflow File Import**: Import saved ComfyWeb workflow files (currently only ComfyUI drag & drop works)
+- **🔌 Missing Node Installation**: Automatic node installation system (detection works, requires backend integration)
 
-**ComfyWeb v2 can't connect:**
-- Ensure ComfyUI is running with CORS enabled
-- Check the server address in ComfyWeb's 'Manage' tab
-- Default should be: http://127.0.0.1:8188
+### 🎯 Future Roadmap
+- **Advanced Pipeline**: Multi-stage workflow automation (Text→Image→Video→Enhancement)
+- **Batch Processing**: Multiple workflow execution management
+- **Mobile Optimization**: Enhanced responsive design
+- **Performance**: Bundle size reduction and loading optimizations
 
-**GPU not detected:**
-- Install appropriate PyTorch version for your GPU
-- NVIDIA: Use CUDA index URL in the installer
-- AMD: Use ROCm version of PyTorch
+## 📖 Usage Guide
 
-**Images don't show previews:**
-- Ensure image files are PNG, JPG, JPEG, or WebP format
-- Check that ComfyUI can access the image files
-- Verify file paths are correct
+### Creating Workflows
+1. **Start Simple**: Click "Add" → choose from 11 professional templates
+2. **Customize**: Edit parameters in intuitive form interface with real-time validation
+3. **Generate**: Click "Generate" to create your image with live progress monitoring
+4. **Save**: Click "Save workflow" to store in browser with auto-generated names
 
-## 🙏 Acknowledgments
-- Original ComfyWeb by [@jac3km4](https://github.com/jac3km4/comfyweb)
-- ComfyUI by [@comfyanonymous](https://github.com/comfyanonymous/ComfyUI)
-- Enhanced by [@virtaava](https://github.com/virtaava) with additional features and automation
+### Gallery & Image Management
+- **View Images**: Real-time gallery shows all generated images from current session
+- **Reload Workflows**: Click any gallery image to reload its generating workflow
+- **Session Persistence**: Images and workflows survive browser refresh
+- **Upload Images**: Drag images to image-to-image templates for immediate previews
+
+### Advanced Features
+- **Drag & Drop**: Drop ComfyUI workflow JSON files to import (fixed critical bug from original)
+- **Browser Storage**: Workflows saved in browser appear in "My Workflows" section
+- **Error Debugging**: Comprehensive debugging with clear error messages and console logging
+
+### Working with Missing Nodes
+When importing workflows that use custom nodes not installed in your ComfyUI:
+1. **Error Detection**: ComfyWeb v2 will identify which nodes are missing
+2. **⚠️ Current Limitation**: Error messages auto-close after 5 seconds, making it hard to copy node names
+3. **Manual Installation**: Use ComfyUI Manager to install the required custom nodes  
+4. **Retry Import**: After installation, import the workflow again
+
+**Improvement Planned**: Error messages will stay open until manually dismissed, with copy functionality for node names.
+
+## 🛠️ Development
+
+### Tech Stack
+- **Frontend**: Svelte 4.2.18 + TypeScript 5.5.3
+- **Build**: Vite 5.4.1 with single-file output
+- **Styling**: Tailwind CSS 3.4.9 + Flowbite components
+- **State**: Reactive stores with TypeScript
+- **Integration**: ComfyUI HTTP API + WebSocket
+
+### Contributing
+We welcome contributions! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes with proper testing
+4. Submit a pull request
+
+## 📝 Version History
+
+### v2.0.0 (Current - Production Ready)
+- **🐛 CRITICAL**: Fixed workflow import crashes that break official v0.0.4
+- **🖼️ NEW**: Professional session gallery with real-time updates
+- **💾 NEW**: Browser workflow storage with save/load functionality
+- **🎨 NEW**: Professional UI with ComfyWeb v2 branding
+- **📸 NEW**: Professional image upload system with previews
+- **🔧 NEW**: Enhanced missing node error detection (improvement planned for UX)
+- **⚡ IMPROVED**: Enhanced error handling and comprehensive validation
+- **🛠️ IMPROVED**: Full TypeScript implementation with type safety
+- **📱 IMPROVED**: Session persistence and recovery system
+
+### Known Issues in Original v0.0.4
+- ❌ Critical workflow import crashes with `TypeError: nodes is not iterable`
+- ❌ No workflow persistence (lost on browser refresh)
+- ❌ Basic gallery without session management
+- ❌ Limited error handling and debugging
+- ❌ Poor missing node error messages
+
+## 🙏 Credits & Acknowledgments
+
+### Original Author
+**Huge thanks to [@jac3km4](https://github.com/jac3km4)** for creating the original [ComfyWeb](https://github.com/jac3km4/comfyweb)! This project provided the foundation and inspiration for all our enhancements.
+
+### ComfyUI Integration
+Built for the amazing [ComfyUI](https://github.com/comfyanonymous/ComfyUI) by [@comfyanonymous](https://github.com/comfyanonymous).
+
+### Enhanced by
+- **[@virtaava](https://github.com/virtaava)**: Complete v2 enhancement, bug fixes, and feature development
+- **Community contributions welcome!**
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+Built with ❤️ for the ComfyUI community.
+
+## 🔗 Links
+
+- **Original ComfyWeb**: https://github.com/jac3km4/comfyweb
+- **ComfyUI**: https://github.com/comfyanonymous/ComfyUI
+- **Development Repository**: Available upon public release
+
+---
+
+**ComfyWeb v2: Your professional ComfyUI workflow interface - stable, enhanced, and ready for serious AI image generation! 🚀**
