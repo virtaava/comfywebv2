@@ -36,7 +36,7 @@ export function getInterruptRequestUrl(host: string): string {
 }
 
 export function getObjectInfoUrl(host: string): string {
-  return `http://${host}/api/object_info`;
+  return `http://${host}/customnode/getlist?mode=comfy`;
 }
 
 export function getWsUrl(host: string): string {

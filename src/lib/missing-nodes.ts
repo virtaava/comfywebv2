@@ -15,6 +15,22 @@ import {
   type ConflictWarning 
 } from "./manager-api";
 
+// Virtual node types that should be converted, not installed
+const VIRTUAL_NODE_TYPES = [
+  'SetNode', 'GetNode',
+  'SeedEverywhere', 'Seed Everywhere',
+  'AnythingEverywhere', 'Anything Everywhere',
+  'AnythingEverywherePrompts', 'Prompts Everywhere',
+  'AnythingEverywhereTriplet', 'Anything Everywhere3',
+  'AnythingSomewhere', 'Anything Everywhere?',
+  'SimpleString'
+];
+
+// Helper function to filter out virtual node types
+function filterVirtualNodes(nodeTypes: NodeTypeId[]): NodeTypeId[] {
+  return nodeTypes.filter(nodeType => !VIRTUAL_NODE_TYPES.includes(nodeType));
+}
+
 // Workflow Documentation Types
 export interface WorkflowDoc {
   type: 'MarkdownNote' | 'Note';
@@ -201,9 +217,23 @@ export class MissingNodeDetector {
     if (nodeTypes.length === 0) {
       return [];
     }
+    
+    // Filter out virtual nodes that should be converted, not installed
+    const realMissingNodes = filterVirtualNodes(nodeTypes);
+    
+    if (realMissingNodes.length === 0) {
+      console.log('[Missing Nodes] All missing nodes were virtual nodes, no real missing extensions');
+      return [];
+    }
+    
+    if (realMissingNodes.length < nodeTypes.length) {
+      const filteredOut = nodeTypes.filter(node => !realMissingNodes.includes(node));
+      console.log(`[Missing Nodes] Filtered out ${filteredOut.length} virtual nodes: ${filteredOut.join(', ')}`);
+      console.log(`[Missing Nodes] Real missing nodes after filtering: ${realMissingNodes.join(', ')}`);
+    }
 
     try {
-      console.log('[Missing Node Detector] Starting two-phase detection for', nodeTypes.length, 'node types');
+      console.log('[Missing Node Detector] Starting two-phase detection for', realMissingNodes.length, 'node types');
       
       // PHASE 1: Check what's locally installed (mode=comfy)
       console.log('[Missing Node Detector] Phase 1: Checking local installations...');
@@ -220,15 +250,15 @@ export class MissingNodeDetector {
       });
       
       // Normalize node names before lookup
-      const normalizedNodeTypes = nodeTypes.map(nodeType => this.normalizeNodeName(nodeType));
-      console.log('[DEBUG] Original vs normalized:', nodeTypes.map((orig, i) => `${orig} -> ${normalizedNodeTypes[i]}`));
+      const normalizedNodeTypes = realMissingNodes.map(nodeType => this.normalizeNodeName(nodeType));
+      console.log('[DEBUG] Original vs normalized:', realMissingNodes.map((orig, i) => `${orig} -> ${normalizedNodeTypes[i]}`));
       
       // Filter out locally installed nodes
       const trulyMissingNodes: NodeTypeId[] = [];
       const installedNodes: NodeTypeId[] = [];
       
-      for (let i = 0; i < nodeTypes.length; i++) {
-        const nodeType = nodeTypes[i];
+      for (let i = 0; i < realMissingNodes.length; i++) {
+        const nodeType = realMissingNodes[i];
         const normalizedType = normalizedNodeTypes[i];
         
         // Check if node is available locally

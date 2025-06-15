@@ -17,20 +17,131 @@ export const errorMessage: Writable<string | undefined> = writable(
 
 export const serverHost: Writable<string> = writable("127.0.0.1:8188");
 
+// Smart caching library store with intelligent loading
+interface LibraryCache {
+  data: NodeLibrary | null;
+  timestamp: number;
+  host: string;
+}
+
+let libraryCache: LibraryCache = {
+  data: null,
+  timestamp: 0,
+  host: ''
+};
+
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_KEY = 'comfyweb_library_cache';
+
 export const library: Readable<DeepReadonly<NodeLibrary>> =
   readable<NodeLibrary>({}, (set) => {
-    serverHost.subscribe((host) => {
-      fetch(getObjectInfoUrl(host))
-        .then((resp) => {
-          if (!resp.ok) throw new Error("Failed to fetch node library");
-          return resp.json();
-        })
-        .then((resp) => {
-          patchLibrary(resp);
-          set(Object.freeze(resp));
-        });
+    serverHost.subscribe(async (host) => {
+      const now = Date.now();
+      
+      // Check if we have valid cached data for this host
+      if (libraryCache.data && 
+          libraryCache.host === host && 
+          (now - libraryCache.timestamp) < CACHE_DURATION) {
+        console.log('📅 [Library] Using cached library data for:', host);
+        console.log('📅 [Library] Cache age:', Math.round((now - libraryCache.timestamp) / 1000), 'seconds');
+        set(Object.freeze(libraryCache.data));
+        return;
+      }
+      
+      console.log('📅 [Library] Fetching fresh node library from:', `http://${host}/api/object_info`);
+      console.log('📅 [Library] Cache status:', libraryCache.data ? 'expired' : 'empty');
+      
+      try {
+        const url = `http://${host}/api/object_info`;
+        const response = await fetch(url);
+        
+        console.log('📅 [Library] Response status:', response.status, response.statusText);
+        console.log('📅 [Library] Response size:', response.headers.get('content-length') || 'unknown');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const nodeData = await response.json();
+        
+        console.log('📅 [Library] Raw response keys:', Object.keys(nodeData).length);
+        
+        // Debug: Check for specific node types
+        const hasSetNode = 'SetNode' in nodeData;
+        const hasGetNode = 'GetNode' in nodeData;
+        const hasRgthree = Object.keys(nodeData).some(key => 
+          key.includes('rgthree') || 
+          key.includes('Bypasser') ||
+          key.includes('Fast Groups')
+        );
+        
+        console.log('📅 [Library] SetNode present:', hasSetNode);
+        console.log('📅 [Library] GetNode present:', hasGetNode);
+        console.log('📅 [Library] rgthree nodes present:', hasRgthree);
+        
+        // Debug: Show some example node types
+        const nodeTypes = Object.keys(nodeData);
+        console.log('📅 [Library] First 10 node types:', nodeTypes.slice(0, 10));
+        console.log('📅 [Library] Last 10 node types:', nodeTypes.slice(-10));
+        
+        // Look for specific missing nodes
+        const impactNodes = nodeTypes.filter(name => 
+          name.includes('Impact') || 
+          name.includes('SetNode') || 
+          name.includes('GetNode')
+        );
+        if (impactNodes.length > 0) {
+          console.log('📅 [Library] Impact Pack nodes found:', impactNodes);
+        }
+        
+        // Apply patches and freeze
+        patchLibrary(nodeData);
+        const frozenData = Object.freeze(nodeData);
+        
+        // Update cache
+        libraryCache = {
+          data: nodeData,
+          timestamp: now,
+          host: host
+        };
+        
+        // Set the library data
+        set(frozenData);
+        
+        console.log('📅 [Library] ✅ Library loaded successfully with', Object.keys(nodeData).length, 'node types');
+        console.log('📅 [Library] Cache updated for host:', host);
+        
+      } catch (error) {
+        console.error('❌ [Library] Failed to load node library:', error);
+        console.error('❌ [Library] Host:', host);
+        console.error('❌ [Library] Error details:', error.message);
+        
+        // If we have cached data, use it as fallback
+        if (libraryCache.data && libraryCache.host === host) {
+          console.log('📅 [Library] Using stale cache as fallback');
+          set(Object.freeze(libraryCache.data));
+        }
+      }
     });
   });
+
+// Utility function to invalidate cache (for use after node installations)
+export function invalidateLibraryCache(): void {
+  console.log('📅 [Library] Cache invalidated manually');
+  libraryCache = {
+    data: null,
+    timestamp: 0,
+    host: ''
+  };
+}
+
+// Utility function to refresh library (force reload)
+export function refreshLibrary(): void {
+  console.log('📅 [Library] Forcing library refresh');
+  invalidateLibraryCache();
+  // Trigger reload by updating serverHost with same value
+  serverHost.update(host => host);
+}
 
 // Enhanced session-persistent gallery store
 function createSessionGalleryStore() {

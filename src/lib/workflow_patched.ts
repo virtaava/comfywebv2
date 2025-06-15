@@ -215,14 +215,14 @@ export function loadFromComfyWorkflow(
       }
     }
 
-    for (const [i, out] of (node.outputs ?? []).entries()) {
+    for (const out of node.outputs ?? []) {
       console.log(`🔍 [Output Debug] Checking output: ${out.name} type ${out.type} slot ${out.slot_index}`);
-      const slot = out.slot_index ?? i;  // CRITICAL FIX: Fallback to index if slot_index missing
+      const slot = out.slot_index ?? i;
       console.log(`🔍 [Output Debug] Using slot ${slot} for output ${out.name}`);
-      
-      if (!stack.has(out.type)) stack.set(out.type, []);
       stack.get(out.type)!.push([nodeId, slot]);
-      console.log(`🔍 [Output Debug] ${node.type}(${nodeId}) registering output ${out.type} at slot ${slot}`);
+      console.log(`🔍 [Output Debug] ${node.type}(${nodeId}) registering output ${out.type} at slot ${out.slot_index}`);
+      if (!stack.has(out.type)) stack.set(out.type, []);
+      stack.get(out.type)!.push([nodeId, out.slot_index]);
       console.log(`🔍 [Output Debug] ${out.type} stack now contains:`, stack.get(out.type));
     }
 
