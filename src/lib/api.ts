@@ -148,3 +148,133 @@ export async function interruptGeneration(host: string): Promise<void> {
     throw new Error(`Failed to interrupt generation: ${response.statusText}`);
   }
 }
+
+/**
+ * Validate workflow with ComfyUI backend - follows original ComfyWeb pattern
+ * Returns validation result with success/error details
+ */
+export interface WorkflowValidationResult {
+  success: boolean;
+  error?: string;
+  missingNodes?: string[];
+}
+
+export async function validateWorkflowWithBackend(
+  host: string,
+  workflowData: string
+): Promise<WorkflowValidationResult> {
+  try {
+    console.log('[Backend Validation] Attempting workflow validation with ComfyUI backend...');
+    
+    const response = await fetch(`http://${host}/api/prompt`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: workflowData
+    });
+    
+    if (response.ok) {
+      console.log('[Backend Validation] ✅ Workflow validation successful');
+      return { success: true };
+    } else {
+      const errorText = await response.text();
+      console.log('[Backend Validation] ❌ Workflow validation failed:', response.status, errorText);
+      
+      // Parse error for missing nodes
+      const missingNodes = parseBackendErrorForMissingNodes(errorText);
+      
+      return { 
+        success: false, 
+        error: errorText,
+        missingNodes: missingNodes.length > 0 ? missingNodes : undefined
+      };
+    }
+  } catch (error) {
+    console.error('[Backend Validation] ❌ Network/parsing error:', error);
+    return { 
+      success: false, 
+      error: error.message || 'Network error during validation'
+    };
+  }
+}
+
+/**
+ * Parse ComfyUI backend error messages to extract missing node types
+ * Handles various error patterns from ComfyUI
+ */
+export function parseBackendErrorForMissingNodes(errorMessage: string): string[] {
+  const missingNodes: string[] = [];
+  
+  try {
+    // Try to parse as JSON error response first
+    const errorData = JSON.parse(errorMessage);
+    
+    // Pattern 1: JSON error with node type info
+    if (errorData.error && typeof errorData.error === 'string') {
+      const nodeMatches = extractNodeTypesFromError(errorData.error);
+      missingNodes.push(...nodeMatches);
+    }
+    
+    // Pattern 2: Nested error structure
+    if (errorData.node_errors) {
+      for (const [nodeId, nodeError] of Object.entries(errorData.node_errors)) {
+        if (typeof nodeError === 'string') {
+          const nodeMatches = extractNodeTypesFromError(nodeError);
+          missingNodes.push(...nodeMatches);
+        }
+      }
+    }
+  } catch (jsonError) {
+    // Not JSON, treat as plain text error message
+    const nodeMatches = extractNodeTypesFromError(errorMessage);
+    missingNodes.push(...nodeMatches);
+  }
+  
+  // Remove duplicates and return
+  return [...new Set(missingNodes)];
+}
+
+/**
+ * Extract node type names from error message text
+ * Handles multiple ComfyUI error patterns
+ */
+function extractNodeTypesFromError(errorText: string): string[] {
+  const nodeTypes: string[] = [];
+  
+  // Pattern 1: "Unknown node type: 'NodeName'"
+  const unknownNodePattern = /Unknown node type: ['"]([^'"]+)['"]/g;
+  let match;
+  
+  while ((match = unknownNodePattern.exec(errorText)) !== null) {
+    nodeTypes.push(match[1]);
+  }
+  
+  // Pattern 2: "Cannot find node class: NodeName"
+  const cannotFindPattern = /Cannot find node class: ([^\s,]+)/g;
+  while ((match = cannotFindPattern.exec(errorText)) !== null) {
+    nodeTypes.push(match[1]);
+  }
+  
+  // Pattern 3: "Node type 'NodeName' not found"
+  const notFoundPattern = /Node type ['"]([^'"]+)['"] not found/g;
+  while ((match = notFoundPattern.exec(errorText)) !== null) {
+    nodeTypes.push(match[1]);
+  }
+  
+  // Pattern 4: "Missing node: NodeName"
+  const missingNodePattern = /Missing node: ([^\s,]+)/g;
+  while ((match = missingNodePattern.exec(errorText)) !== null) {
+    nodeTypes.push(match[1]);
+  }
+  
+  // Pattern 5: "Cannot execute because node NodeName does not exist"
+  const cannotExecutePattern = /Cannot execute because node ([^\s]+) does not exist/g;
+  while ((match = cannotExecutePattern.exec(errorText)) !== null) {
+    nodeTypes.push(match[1]);
+  }
+  
+  console.log('[Backend Validation] Extracted node types from error:', nodeTypes);
+  return nodeTypes;
+}

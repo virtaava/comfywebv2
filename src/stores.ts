@@ -5,6 +5,7 @@ import { getObjectInfoUrl, patchLibrary } from "./lib/api";
 import type { NodeLibrary } from "./lib/comfy";
 import type { GalleryItem } from "./lib/gallery";
 import type { WorkflowItem } from "./lib/workflow";
+import type { WorkflowDoc } from "./lib/missing-nodes";
 
 export const infoMessage: Writable<string | undefined> = writable();
 export const errorMessage: Writable<string | undefined> = writable(
@@ -189,6 +190,345 @@ export const installationStatus = writable<{
   progress: {}
 });
 
+// Enhanced Missing Nodes System Stores
+export interface MissingNodesState {
+  isDialogOpen: boolean;
+  missingNodes: import('./lib/missing-nodes').MissingNodeInfo[];
+  installationPlan: import('./lib/missing-nodes').InstallationPlan | null;
+  conflictAnalysis: import('./lib/missing-nodes').ConflictAnalysis | null;
+}
+
+export interface InstallationProgressState {
+  isInstalling: boolean;
+  currentExtension: string | null;
+  progress: number;
+  queue: import('./lib/installation-queue').InstallationQueueItem[];
+  errors: import('./lib/installation-queue').InstallationError[];
+}
+
+export interface UserSelectionsState {
+  selectedExtensions: Map<string, import('./lib/missing-nodes').Extension>;
+  conflictResolutions: Map<string, any>;
+  installationOptions: any;
+}
+
+// Missing Nodes State Store
+function createMissingNodesStore() {
+  const initialState: MissingNodesState = {
+    isDialogOpen: false,
+    missingNodes: [],
+    installationPlan: null,
+    conflictAnalysis: null
+  };
+
+  const { subscribe, set, update } = writable<MissingNodesState>(initialState);
+
+  return {
+    subscribe,
+    set,
+    update
+  };
+}
+
+// Installation Progress Store
+function createInstallationProgressStore() {
+  const initialState: InstallationProgressState = {
+    isInstalling: false,
+    currentExtension: null,
+    progress: 0,
+    queue: [],
+    errors: []
+  };
+
+  const { subscribe, set, update } = writable<InstallationProgressState>(initialState);
+
+  return {
+    subscribe,
+    set,
+    update
+  };
+}
+
+// User Selections Store
+function createUserSelectionsStore() {
+  const initialState: UserSelectionsState = {
+    selectedExtensions: new Map(),
+    conflictResolutions: new Map(),
+    installationOptions: {}
+  };
+
+  const { subscribe, set, update } = writable<UserSelectionsState>(initialState);
+
+  return {
+    subscribe,
+    set,
+    update
+  };
+}
+
+export const missingNodesState = createMissingNodesStore();
+export const installationProgress = createInstallationProgressStore();
+export const userSelections = createUserSelectionsStore();
+
+
+export type InstallationStatus = 
+  | "idle" 
+  | "detecting" 
+  | "installing" 
+  | "restarting"  // NEW
+  | "complete" 
+  | "error";
+
+export interface InstallationState {
+  status: InstallationStatus;
+  isInstalling: boolean;
+  totalExtensions: number;
+  completedExtensions: number;
+  currentExtension?: string;
+  currentOperation: string;
+  errors: InstallationError[];
+  estimatedTimeRemaining: number;
+  needsRestart: boolean;
+  installationQueue: ExtensionSelection[];
+  completedExtensions: string[];
+  failedExtensions: string[];
+  isRestarting: boolean;
+}
+
+export interface InstallationError {
+  extensionId: string;
+  errorType: 'network' | 'conflict' | 'security' | 'unknown';
+  message: string;
+  recoveryOptions: RecoveryOption[];
+}
+
+export interface RecoveryOption {
+  action: 'retry' | 'skip' | 'alternative';
+  description: string;
+}
+
+export interface ExtensionSelection {
+  extensionId: string;
+  version: string;
+  nodeType: string;
+  gitUrl: string;
+  title?: string;
+  author?: string;
+}
+
+// Status messages for UI display
+export const INSTALLATION_STATUS_MESSAGES = {
+  idle: "Ready to install extensions",
+  detecting: "Detecting missing nodes...",
+  installing: "Installing extensions...",
+  restarting: "Restarting ComfyUI...",  // NEW
+  complete: "Installation complete!",
+  error: "Installation failed"
+};
+
+function createInstallationStateStore() {
+  const initialState: InstallationState = {
+    status: "idle",
+    isInstalling: false,
+    totalExtensions: 0,
+    completedExtensions: 0,
+    currentExtension: undefined,
+    currentOperation: 'Ready',
+    errors: [],
+    estimatedTimeRemaining: 0,
+    needsRestart: false,
+    installationQueue: [],
+    completedExtensions: [],
+    failedExtensions: [],
+    isRestarting: false
+  };
+
+  const { subscribe, set, update } = writable<InstallationState>(initialState);
+
+  return {
+    subscribe,
+    set,
+    update,
+    
+    // Start installation process
+    startInstallation: (queue: ExtensionSelection[]) => {
+      update(state => ({
+        ...state,
+        isInstalling: true,
+        totalExtensions: queue.length,
+        completedExtensions: 0,
+        currentOperation: 'Starting installation...',
+        installationQueue: queue,
+        errors: [],
+        completedExtensions: [],
+        failedExtensions: []
+      }));
+    },
+    
+    // Update progress
+    updateProgress: (completed: number, current?: string, operation?: string) => {
+      update(state => ({
+        ...state,
+        completedExtensions: completed,
+        currentExtension: current,
+        currentOperation: operation || state.currentOperation,
+        estimatedTimeRemaining: state.totalExtensions > 0 
+          ? ((state.totalExtensions - completed) * 30000) // 30s per extension
+          : 0
+      }));
+    },
+    
+    // Add error
+    addError: (error: InstallationError) => {
+      update(state => ({
+        ...state,
+        errors: [...state.errors, error]
+      }));
+    },
+    
+    // Complete installation
+    completeInstallation: (successful: string[], failed: string[]) => {
+      update(state => ({
+        ...state,
+        isInstalling: false,
+        currentOperation: failed.length > 0 
+          ? `Installation completed with ${failed.length} errors`
+          : 'Installation completed successfully',
+        needsRestart: successful.length > 0,
+        completedExtensions: successful,
+        failedExtensions: failed
+      }));
+    },
+    
+    // Start restart process
+    startRestart: () => {
+      update(state => ({
+        ...state,
+        status: "restarting",
+        isRestarting: true,
+        currentOperation: INSTALLATION_STATUS_MESSAGES.restarting
+      }));
+    },
+    
+    // Complete restart process
+    completeRestart: () => {
+      update(state => ({
+        ...state,
+        status: "complete",
+        isRestarting: false,
+        needsRestart: false,
+        currentOperation: "ComfyUI restarted successfully!"
+      }));
+    },
+    
+    // Restart failed
+    restartFailed: (error: string) => {
+      update(state => ({
+        ...state,
+        status: "error",
+        isRestarting: false,
+        currentOperation: `Restart failed: ${error}`
+      }));
+    },
+    
+    // Reset state
+    reset: () => {
+      set(initialState);
+    },
+    
+    // Mark restart as completed (legacy)
+    restartCompleted: () => {
+      update(state => ({
+        ...state,
+        needsRestart: false,
+        currentOperation: 'Ready'
+      }));
+    }
+  };
+}
+
+export const installationState = createInstallationStateStore();
+
+// Missing Nodes Dialog State
+export interface MissingNodesDialogState {
+  isOpen: boolean;
+  missingNodePlan: import('./lib/missing-nodes').MissingNodePlan | null;
+  userSelections: Record<string, string>; // nodeType -> extensionId
+  showConflictDialog: boolean;
+  conflictResolutions: Record<string, any>;
+}
+
+function createMissingNodesDialogStore() {
+  const initialState: MissingNodesDialogState = {
+    isOpen: false,
+    missingNodePlan: null,
+    userSelections: {},
+    showConflictDialog: false,
+    conflictResolutions: {}
+  };
+
+  const { subscribe, set, update } = writable<MissingNodesDialogState>(initialState);
+
+  return {
+    subscribe,
+    set,
+    update,
+    
+    // Open dialog with missing node plan
+    openDialog: (plan: import('./lib/missing-nodes').MissingNodePlan) => {
+      update(state => ({
+        ...state,
+        isOpen: true,
+        missingNodePlan: plan,
+        userSelections: { ...plan.recommendedSelections },
+        showConflictDialog: false,
+        conflictResolutions: {}
+      }));
+    },
+    
+    // Close dialog
+    closeDialog: () => {
+      update(state => ({
+        ...state,
+        isOpen: false,
+        missingNodePlan: null,
+        userSelections: {},
+        showConflictDialog: false,
+        conflictResolutions: {}
+      }));
+    },
+    
+    // Update user selection for a node type
+    updateSelection: (nodeType: string, extensionId: string) => {
+      update(state => ({
+        ...state,
+        userSelections: {
+          ...state.userSelections,
+          [nodeType]: extensionId
+        }
+      }));
+    },
+    
+    // Show conflict resolution dialog
+    showConflicts: () => {
+      update(state => ({
+        ...state,
+        showConflictDialog: true
+      }));
+    },
+    
+    // Hide conflict resolution dialog
+    hideConflicts: () => {
+      update(state => ({
+        ...state,
+        showConflictDialog: false
+      }));
+    }
+  };
+}
+
+export const missingNodesDialog = createMissingNodesDialogStore();
+
 // Generation state store for stop functionality
 export const generationState = writable<{
   isGenerating: boolean;
@@ -323,6 +663,9 @@ function createOutputImagesStore() {
 
 export const sessionImages = createSessionImagesStore();
 export const outputImages = createOutputImagesStore();
+
+// Workflow Documentation Store
+export const workflowDocumentation = writable<WorkflowDoc[]>([]);
 
 // Session persistence utilities
 export function clearComfyWebSession(): void {

@@ -2,10 +2,11 @@
     import "./app.css";
     import { onMount } from "svelte";
 
-    import { errorMessage, serverHost, infoMessage, hasSessionData, clearComfyWebSession } from "./stores";
+    import { errorMessage, serverHost, infoMessage, hasSessionData, clearComfyWebSession, workflowDocumentation } from "./stores";
 
     import DropFileContainer from "./containers/DropFileContainer.svelte";
     import SidebarContainer from "./containers/SidebarContainer.svelte";
+  import WorkflowDocumentationPanel from "./components/WorkflowDocumentationPanel.svelte";
     import GalleryContainer from "./containers/GalleryContainer.svelte";
     import NotificationToastComponent from "./components/NotificationToastComponent.svelte";
 

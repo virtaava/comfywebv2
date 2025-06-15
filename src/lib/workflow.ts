@@ -122,7 +122,12 @@ export function loadFromComfyWorkflow(
     }
 
     for (const input of node.inputs ?? []) {
-      const [, fromNode, fromSlot] = edgesById.get(input.link)!;
+      const link = edgesById.get(input.link);
+      if (!link) {
+        console.warn(`Missing edge ${input.link} for input ${input.name} in node ${node.type}`);
+        continue;
+      }
+      const [, fromNode, fromSlot] = link;
       const output = stack.get(input.type);
       const index = output?.findIndex(
         ([id, slot]) => id === fromNode && slot === fromSlot,
@@ -223,10 +228,18 @@ function patchConditioningNodes(nodes: Node[]) {
 function propagateTypes(nodes: Map<NodeId, Node>, links: Map<LinkId, Link>) {
   for (const node of nodes.values()) {
     for (const input of node.inputs ?? []) {
-      const [, from, fromSlot] = links.get(input.link)!;
-      const output = nodes
-        .get(from)!
-        .outputs!.find((o) => o.slot_index === fromSlot)!;
+      const link = links.get(input.link);
+      if (!link) {
+        console.warn(`Missing link ${input.link} for input ${input.name} in node ${node.id}`);
+        continue;
+      }
+      const [, from, fromSlot] = link;
+      const fromNode = nodes.get(from);
+      if (!fromNode) {
+        console.warn(`Missing source node ${from} for link ${input.link}`);
+        continue;
+      }
+      const output = fromNode.outputs?.find((o) => o.slot_index === fromSlot);
       if (output) {
         output.type = input.type;
       }

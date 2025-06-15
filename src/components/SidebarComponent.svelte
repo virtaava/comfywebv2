@@ -10,11 +10,12 @@
     import { createPickerTree, NodePickerValue } from "../lib/picker";
     import { WorkflowItem, WorkflowStep } from "../lib/workflow";
     import { workflowStorage } from "../lib/workflow-storage";
-    import { savedWorkflows, outputImages } from "../stores";
+    import { savedWorkflows, outputImages, workflowDocumentation } from "../stores";
 
     import TreeDropdownComponent from "./TreeDropdownComponent.svelte";
     import WorkflowComponent from "./WorkflowComponent.svelte";
     import GalleryTab from "./GalleryTab.svelte";
+    import WorkflowDocumentationPanel from "./WorkflowDocumentationPanel.svelte";
 
     export let workflow: WorkflowItem[];
     export let library: DeepReadonly<NodeLibrary>;
@@ -153,6 +154,13 @@
     
     <Tabs tabStyle="underline" contentClass="overflow-y-scroll">
         <TabItem open title="Workflow">
+            <!-- Workflow Documentation Panel -->
+            {#if $workflowDocumentation.length > 0}
+                <div class="px-4 pt-4">
+                    <WorkflowDocumentationPanel documentation={$workflowDocumentation} />
+                </div>
+            {/if}
+            
             <WorkflowComponent bind:items={workflow} {library} />
         </TabItem>
         <TabItem title="Manage">
