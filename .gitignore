@@ -30,6 +30,13 @@ DEVELOPMENT_PROTOCOL.md
 PROJECT_TRACKER.md
 NEW_CLAUDE_ONBOARDING.md
 
+# Phase 2 management files (not for repository)
+DEVELOPMENT_PROTOCOL_PHASE2.md
+PROJECT_TRACKER_PHASE2.md
+PRODUCTION_CHANGES_LOG.md
+COMMUNITY_FEEDBACK_LOG.md
+PROJECT_TRACKER_PHASE1_LEGACY.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
