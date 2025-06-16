@@ -25,7 +25,7 @@ When you select a **template**, ComfyWeb V2 displays it as a **stack of cards** 
 
 ## 📚 Template Library - Your Recipe Collection
 
-ComfyWeb V2 comes with **14 professionally crafted templates** organized across **5 categories**:
+ComfyWeb V2 comes with **14 templates** organized across **5 categories**:
 
 ### 📸 **Text to Image** (3 templates)
 - **SDXL Basic** - High-quality text-to-image generation using SDXL model
@@ -51,7 +51,6 @@ ComfyWeb V2 comes with **14 professionally crafted templates** organized across 
 - **ControlNet Pose Control** - Guided generation using pose detection
 - **Professional Portrait** - Optimized settings for portrait photography
 
-Each template includes **difficulty ratings**, **estimated generation times**, and **example prompts** to get you started.
 
 ---
 
@@ -63,12 +62,12 @@ ComfyWeb V2 features a **session-persistent gallery** that automatically tracks 
 - **Automatic Collection** - Every image you generate appears in the gallery
 - **Session Persistence** - Images stay in gallery across browser refresh
 - **Generation Context** - Click images to see their prompts and settings
-- **Professional Interface** - Clean, organized grid view with hover effects
+- **Professional Interface** - Clean, organised grid view with hover effects
 
 ### 🎯 **How It Works**
 1. Generate images using any template
-2. Images automatically appear in Gallery tab
-3. Gallery persists until you close the browser tab
+2. Images automatically appear in the Gallery tab
+3. The gallery persists until you close the browser tab. If you come back and refresh the gallery, you will see your previous generations, if the browser is the same.
 4. Perfect for comparing results and iterating on prompts
 
 ---
