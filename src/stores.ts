@@ -3,7 +3,8 @@ import type { DeepReadonly } from "ts-essentials";
 
 import { getObjectInfoUrl, patchLibrary } from "./lib/api";
 import type { NodeLibrary } from "./lib/comfy";
-import type { GalleryItem } from "./lib/gallery";
+
+import type { GalleryImage } from "./lib/gallery-api";
 import type { WorkflowItem } from "./lib/workflow";
 import type { WorkflowDoc } from "./lib/missing-nodes";
 
@@ -143,72 +144,7 @@ export function refreshLibrary(): void {
   serverHost.update(host => host);
 }
 
-// Enhanced session-persistent gallery store
-function createSessionGalleryStore() {
-  const SESSION_KEY = 'comfyweb_gallery_session';
-  
-  // Try to restore from sessionStorage
-  let initialValue: Record<string, GalleryItem> = {};
-  try {
-    const saved = sessionStorage.getItem(SESSION_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed && typeof parsed === 'object') {
-        initialValue = parsed;
-      }
-    }
-  } catch (error) {
-    console.warn('Failed to restore gallery from session:', error);
-  }
-
-  const { subscribe, set, update } = writable<Record<string, GalleryItem>>(initialValue);
-
-  return {
-    subscribe,
-    set: (value: Record<string, GalleryItem>) => {
-      // Save to sessionStorage on every change
-      try {
-        if (Object.keys(value).length > 0) {
-          sessionStorage.setItem(SESSION_KEY, JSON.stringify(value));
-        } else {
-          sessionStorage.removeItem(SESSION_KEY);
-        }
-      } catch (error) {
-        if (error.name === 'QuotaExceededError') {
-          console.warn('Session storage quota exceeded. Clearing gallery data.');
-          sessionStorage.removeItem(SESSION_KEY);
-        } else {
-          console.warn('Failed to save gallery to session:', error);
-        }
-      }
-      set(value);
-    },
-    update: (updater: (value: Record<string, GalleryItem>) => Record<string, GalleryItem>) => {
-      update((current) => {
-        const newValue = updater(current);
-        // Save to sessionStorage with quota handling
-        try {
-          if (Object.keys(newValue).length > 0) {
-            sessionStorage.setItem(SESSION_KEY, JSON.stringify(newValue));
-          } else {
-            sessionStorage.removeItem(SESSION_KEY);
-          }
-        } catch (error) {
-          if (error.name === 'QuotaExceededError') {
-            console.warn('Session storage quota exceeded. Clearing gallery data.');
-            sessionStorage.removeItem(SESSION_KEY);
-            // Continue with the update anyway
-          } else {
-            console.warn('Failed to save gallery to session:', error);
-          }
-        }
-        return newValue;
-      });
-    }
-  };
-}
-
-export const gallery = createSessionGalleryStore();
+// OLD GALLERY SYSTEM REMOVED - Using only galleryHistory store with ComfyUI history API
 
 // Enhanced session-persistent workflow store
 function createSessionWorkflowStore() {
@@ -694,95 +630,196 @@ function createSavedWorkflowsStore() {
 
 export const savedWorkflows = createSavedWorkflowsStore();
 
-// Gallery tab stores with session persistence
-function createSessionImagesStore() {
-  const SESSION_KEY = 'comfyweb_session_images';
+// Workflow Documentation Store
+export const workflowDocumentation = writable<WorkflowDoc[]>([]);
+
+// Enhanced Gallery State Management for ComfyUI History Integration
+export interface GalleryHistoryState {
+  promptHistory: string[];  // Array of prompt IDs
+  images: import('./lib/gallery-api').GalleryImage[];
+  loading: boolean;
+  lastRefresh: number;
+  errors: string[];
+}
+
+function createGalleryHistoryStore() {
+  const STORAGE_KEY = 'comfyweb_gallery_history';
   
-  // Try to restore from sessionStorage
-  let initialValue: string[] = [];
+  // Try to restore from localStorage for persistence
+  let initialState: GalleryHistoryState = {
+    promptHistory: [],
+    images: [],
+    loading: false,
+    lastRefresh: 0,
+    errors: []
+  };
+  
   try {
-    const saved = sessionStorage.getItem(SESSION_KEY);
+    const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed)) {
-        initialValue = parsed;
+      if (parsed && typeof parsed === 'object') {
+        initialState = {
+          promptHistory: Array.isArray(parsed.promptHistory) ? parsed.promptHistory : [],
+          images: Array.isArray(parsed.images) ? parsed.images : [],
+          loading: false, // Always start as not loading
+          lastRefresh: parsed.lastRefresh || 0,
+          errors: Array.isArray(parsed.errors) ? parsed.errors : []
+        };
       }
     }
   } catch (error) {
-    console.warn('Failed to restore session images:', error);
+    console.warn('[Gallery] Failed to restore gallery history:', error);
   }
 
-  const { subscribe, set, update } = writable<string[]>(initialValue);
-  
+  const { subscribe, set, update } = writable<GalleryHistoryState>(initialState);
+
+  // Save to localStorage on changes (excluding loading state)
+  const saveToStorage = (state: GalleryHistoryState) => {
+    try {
+      const toSave = {
+        promptHistory: state.promptHistory,
+        images: state.images,
+        lastRefresh: state.lastRefresh,
+        errors: state.errors
+        // Don't save loading state
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+    } catch (error) {
+      if (error.name === 'QuotaExceededError') {
+        console.warn('[Gallery] Storage quota exceeded, clearing old data');
+        localStorage.removeItem(STORAGE_KEY);
+      } else {
+        console.warn('[Gallery] Failed to save gallery history:', error);
+      }
+    }
+  };
+
   return {
     subscribe,
-    set: (value: string[]) => {
-      // Save to sessionStorage
-      try {
-        if (value.length > 0) {
-          sessionStorage.setItem(SESSION_KEY, JSON.stringify(value));
-        } else {
-          sessionStorage.removeItem(SESSION_KEY);
-        }
-      } catch (error) {
-        console.warn('Failed to save session images:', error);
-      }
+    set: (value: GalleryHistoryState) => {
+      saveToStorage(value);
       set(value);
     },
-    update,
-    addImage: (imageUrl: string) => {
-      update(images => {
-        if (!images.includes(imageUrl)) {
-          const newImages = [...images, imageUrl];
-          // Save to sessionStorage
-          try {
-            sessionStorage.setItem(SESSION_KEY, JSON.stringify(newImages));
-          } catch (error) {
-            console.warn('Failed to save session images:', error);
-          }
-          return newImages;
+    update: (updater: (value: GalleryHistoryState) => GalleryHistoryState) => {
+      update((current) => {
+        const newValue = updater(current);
+        saveToStorage(newValue);
+        return newValue;
+      });
+    },
+    
+    // Gallery-specific methods
+    addPromptId: (promptId: string) => {
+      update(state => {
+        if (!state.promptHistory.includes(promptId)) {
+          const newState = {
+            ...state,
+            promptHistory: [promptId, ...state.promptHistory].slice(0, 100) // Keep max 100 prompts
+          };
+          saveToStorage(newState);
+          return newState;
         }
-        return images;
+        return state;
+      });
+    },
+    
+    setLoading: (loading: boolean) => {
+      update(state => ({ ...state, loading }));
+    },
+    
+    setImages: (images: import('./lib/gallery-api').GalleryImage[]) => {
+      update(state => {
+        const newState = {
+          ...state,
+          images,
+          lastRefresh: Date.now(),
+          errors: [] // Clear errors on successful load
+        };
+        saveToStorage(newState);
+        return newState;
+      });
+    },
+    
+    addError: (error: string) => {
+      update(state => {
+        const newState = {
+          ...state,
+          errors: [...state.errors, error].slice(-5) // Keep max 5 errors
+        };
+        saveToStorage(newState);
+        return newState;
+      });
+    },
+    
+    clearErrors: () => {
+      update(state => {
+        const newState = { ...state, errors: [] };
+        saveToStorage(newState);
+        return newState;
+      });
+    },
+    
+    removeImage: (filename: string) => {
+      update(state => {
+        const newState = {
+          ...state,
+          images: state.images.filter(img => img.filename !== filename)
+        };
+        saveToStorage(newState);
+        return newState;
       });
     }
   };
 }
 
-function createOutputImagesStore() {
-  const { subscribe, set, update } = writable<string[]>([]);
+export const galleryHistory = createGalleryHistoryStore();
+
+// Gallery management utility functions
+export async function refreshGalleryImages(): Promise<void> {
+  const { loadGalleryImages } = await import('./lib/gallery-api');
+  const currentState = get(galleryHistory);
   
-  return {
-    subscribe,
-    set,
-    update,
-    refresh: async (serverHost: string) => {
-      try {
-        const response = await fetch(`http://${serverHost}/output/`);
-        if (response.ok) {
-          const html = await response.text();
-          const matches = [...html.matchAll(/href=\"([^\"]+\.(png|jpg|jpeg|webp))\"/g)];
-          const urls = matches.map(match => `http://${serverHost}/output/${match[1]}`);
-          set(urls.reverse()); // Most recent first
-        }
-      } catch (error) {
-        console.warn('Failed to load output images:', error);
-        set([]);
-      }
+  if (currentState.promptHistory.length === 0) {
+    console.log('[Gallery] No prompts in history, nothing to refresh');
+    return;
+  }
+  
+  galleryHistory.setLoading(true);
+  galleryHistory.clearErrors();
+  
+  try {
+    console.log(`[Gallery] Refreshing gallery for ${currentState.promptHistory.length} prompts`);
+    const result = await loadGalleryImages(currentState.promptHistory);
+    
+    galleryHistory.setImages(result.images);
+    
+    if (result.errors.length > 0) {
+      result.errors.forEach(error => galleryHistory.addError(error));
     }
-  };
+    
+    console.log(`[Gallery] Refresh complete: ${result.images.length} images loaded, ${result.errors.length} errors`);
+  } catch (error) {
+    console.error('[Gallery] Failed to refresh gallery:', error);
+    galleryHistory.addError(`Failed to refresh gallery: ${error.message}`);
+  } finally {
+    galleryHistory.setLoading(false);
+  }
 }
 
-export const sessionImages = createSessionImagesStore();
-export const outputImages = createOutputImagesStore();
+export function addPromptToGallery(promptId: string): void {
+  console.log('[Gallery] Adding prompt to gallery tracking:', promptId);
+  galleryHistory.addPromptId(promptId);
+}
 
-// Workflow Documentation Store
-export const workflowDocumentation = writable<WorkflowDoc[]>([]);
+// Import get function for accessing store values
+import { get } from 'svelte/store';
 
 // Session persistence utilities
 export function clearComfyWebSession(): void {
   try {
     sessionStorage.removeItem('comfyweb_workflow_session');
-    sessionStorage.removeItem('comfyweb_gallery_session');
+    // Note: gallery now uses localStorage (galleryHistory), not sessionStorage
     console.info('ComfyWeb session data cleared');
   } catch (error) {
     console.warn('Failed to clear session data:', error);
@@ -791,8 +828,7 @@ export function clearComfyWebSession(): void {
 
 export function hasSessionData(): boolean {
   try {
-    return !!(sessionStorage.getItem('comfyweb_workflow_session') || 
-             sessionStorage.getItem('comfyweb_gallery_session'));
+    return !!(sessionStorage.getItem('comfyweb_workflow_session'));
   } catch (error) {
     return false;
   }

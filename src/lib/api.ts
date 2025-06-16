@@ -1,5 +1,6 @@
 import * as R from "remeda";
 import type { DeepReadonly } from "ts-essentials";
+import type { GalleryImage } from "./gallery-api";
 
 import {
   NodeInputSchema,
@@ -277,4 +278,80 @@ function extractNodeTypesFromError(errorText: string): string[] {
   
   console.log('[Backend Validation] Extracted node types from error:', nodeTypes);
   return nodeTypes;
+}
+
+/**
+ * Submit workflow to ComfyUI and capture prompt_id for gallery tracking
+ */
+export interface WorkflowSubmissionResult {
+  success: boolean;
+  promptId?: string;
+  error?: string;
+  queueNumber?: number;
+}
+
+export async function submitWorkflowForExecution(
+  host: string,
+  promptRequest: PromptRequest
+): Promise<WorkflowSubmissionResult> {
+  try {
+    console.log('[Workflow Submission] Submitting workflow to ComfyUI...');
+    
+    const response = await fetch(`http://${host}/api/prompt`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(promptRequest)
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[Workflow Submission] ❌ Failed to submit workflow:', response.status, errorText);
+      return {
+        success: false,
+        error: `HTTP ${response.status}: ${errorText}`
+      };
+    }
+    
+    const result = await response.json();
+    console.log('[Workflow Submission] ✅ Workflow submitted successfully:', result);
+    
+    if (result.prompt_id) {
+      // Add to gallery tracking
+      const { addPromptToGallery } = await import('../stores');
+      addPromptToGallery(result.prompt_id);
+      
+      return {
+        success: true,
+        promptId: result.prompt_id,
+        queueNumber: result.number
+      };
+    } else {
+      console.warn('[Workflow Submission] ⚠️ No prompt_id in response:', result);
+      return {
+        success: false,
+        error: 'No prompt_id returned from ComfyUI'
+      };
+    }
+  } catch (error) {
+    console.error('[Workflow Submission] ❌ Network error:', error);
+    return {
+      success: false,
+      error: error.message || 'Network error during workflow submission'
+    };
+  }
+}
+
+/**
+ * Convenience function to create and submit workflow in one call
+ */
+export async function submitWorkflow(
+  host: string,
+  graph: DeepReadonly<GraphMetadata>,
+  steps?: DeepReadonly<WorkflowStep[]>
+): Promise<WorkflowSubmissionResult> {
+  const promptRequest = createPromptRequest(graph, steps);
+  return await submitWorkflowForExecution(host, promptRequest);
 }

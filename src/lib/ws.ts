@@ -1,7 +1,6 @@
 import { getWsUrl, getImageUrl } from "./api";
 import { Message } from "./comfy";
-import { GalleryItem } from "./gallery";
-import { errorMessage, gallery, infoMessage, sessionImages, serverHost, generationState } from "../stores";
+import { errorMessage, infoMessage, serverHost, generationState, addPromptToGallery } from "../stores";
 import { get } from "svelte/store";
 
 export function spawnWebSocketListener(host: string): WebSocket {
@@ -13,82 +12,47 @@ export function spawnWebSocketListener(host: string): WebSocket {
 
   ws.addEventListener("message", (event) => {
     const payload = JSON.parse(event.data);
+    
+    // Handle WebSocket messages for generation state tracking
     if (Message.isProgress(payload)) {
-      gallery.update((state) => {
-        const existing = state[payload.data.prompt_id];
-        if (existing !== undefined) {
-          state[payload.data.prompt_id] = GalleryItem.newQueued(
-            existing.id,
-            existing.workflow,
-            payload.data.value,
-            payload.data.max,
-            payload.data.node,
-          );
-        }
-        return state;
-      });
+      // Progress updates - just log for now
+      console.log('[WebSocket] Progress:', payload.data.value, '/', payload.data.max);
     } else if (Message.isExecuting(payload)) {
-      gallery.update((state) => {
-        const existing = state[payload.data.prompt_id];
-        if (existing !== undefined && GalleryItem.isQueued(existing)) {
-          existing.nodeId = payload.data.node;
-        }
-        return state;
-      });
+      // Execution started
+      console.log('[WebSocket] Executing node:', payload.data.node);
     } else if (Message.isExecuted(payload)) {
-      gallery.update((state) => {
-        const existing = state[payload.data.prompt_id];
-        if (existing !== undefined) {
-          const newItem = GalleryItem.newExecuted(
-            existing.id,
-            existing.workflow,
-            payload.data.output?.images,
-          );
-          state[payload.data.prompt_id] = newItem;
-          
-          // Add generated images to session store for Gallery tab
-          if (newItem.images && newItem.images.length > 0) {
-            const currentHost = get(serverHost);
-            newItem.images.forEach(image => {
-              const imageUrl = getImageUrl(currentHost, image);
-              sessionImages.addImage(imageUrl);
-            });
-          }
-          
-          // Reset generation state when this prompt completes
-          const currentState = get(generationState);
-          if (currentState.currentPromptId === payload.data.prompt_id) {
-            generationState.set({
-              isGenerating: false,
-              currentPromptId: undefined
-            });
-          }
-        }
-        return state;
-      });
+      // Execution completed - images are now available in ComfyUI history
+      console.log('[WebSocket] Execution completed for prompt:', payload.data.prompt_id);
+      
+      // Reset generation state when this prompt completes
+      const currentState = get(generationState);
+      if (currentState.currentPromptId === payload.data.prompt_id) {
+        generationState.set({
+          isGenerating: false,
+          currentPromptId: undefined
+        });
+        
+        // Trigger gallery refresh to show new images
+        // The images will be loaded from ComfyUI history API
+        setTimeout(() => {
+          // Import refreshGalleryImages dynamically to avoid circular imports
+          import('../stores').then(({ refreshGalleryImages }) => {
+            refreshGalleryImages();
+          });
+        }, 1000); // Wait a bit for ComfyUI to update its history
+      }
     } else if (Message.isExecutionError(payload)) {
-      gallery.update((state) => {
-        const existing = state[payload.data.prompt_id];
-        if (existing !== undefined) {
-          state[payload.data.prompt_id] = GalleryItem.newFailed(
-            existing.id,
-            existing.workflow,
-            payload.data.exception_message,
-            payload.data.exception_type,
-            payload.data.node_type,
-          );
-          
-          // Reset generation state on error too
-          const currentState = get(generationState);
-          if (currentState.currentPromptId === payload.data.prompt_id) {
-            generationState.set({
-              isGenerating: false,
-              currentPromptId: undefined
-            });
-          }
-        }
-        return state;
-      });
+      // Execution failed
+      console.error('[WebSocket] Execution error:', payload.data);
+      
+      // Reset generation state on error too
+      const currentState = get(generationState);
+      if (currentState.currentPromptId === payload.data.prompt_id) {
+        generationState.set({
+          isGenerating: false,
+          currentPromptId: undefined
+        });
+      }
     }
   });
 

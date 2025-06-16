@@ -10,7 +10,7 @@
     import { createPickerTree, NodePickerValue } from "../lib/picker";
     import { WorkflowItem, WorkflowStep } from "../lib/workflow";
     import { workflowStorage } from "../lib/workflow-storage";
-    import { savedWorkflows, outputImages, workflowDocumentation } from "../stores";
+    import { savedWorkflows, workflowDocumentation } from "../stores";
 
     import TreeDropdownComponent from "./TreeDropdownComponent.svelte";
     import WorkflowComponent from "./WorkflowComponent.svelte";
@@ -33,34 +33,6 @@
     }>();
 
     let fileInput: HTMLInputElement;
-    let outputFolderPath = '';
-    
-    // Load output folder path from localStorage
-    try {
-        const saved = localStorage.getItem('comfyweb_output_folder_path');
-        if (saved) {
-            outputFolderPath = saved;
-        }
-    } catch (error) {
-        console.warn('Failed to load output folder path:', error);
-    }
-    
-    // Save output folder path to localStorage when changed
-    function updateOutputFolderPath() {
-        try {
-            if (outputFolderPath.trim()) {
-                localStorage.setItem('comfyweb_output_folder_path', outputFolderPath.trim());
-            } else {
-                localStorage.removeItem('comfyweb_output_folder_path');
-            }
-            // Trigger output images refresh if path is set
-            if (outputFolderPath.trim()) {
-                outputImages.refresh(serverHost);
-            }
-        } catch (error) {
-            console.warn('Failed to save output folder path:', error);
-        }
-    }
 
     function onDropdownSelect(value: DeepReadonly<NodePickerValue>) {
         if (NodePickerValue.isNode(value)) {
@@ -205,20 +177,6 @@
                 <h2 class="mt-4">Settings</h2>
                 <Label for="url">ComfyUI server host</Label>
                 <Input id="url" type="text" bind:value={serverHost} />
-                
-                <Label for="output-folder" class="mt-3">ComfyUI Output Folder (Optional)</Label>
-                <Input 
-                    id="output-folder" 
-                    type="text" 
-                    bind:value={outputFolderPath}
-                    on:blur={updateOutputFolderPath}
-                    placeholder="e.g., C:\ComfyUI\output or /path/to/ComfyUI/output"
-                    class="text-sm"
-                />
-                <p class="text-xs text-gray-400 mt-1">
-                    Optional: Path to your ComfyUI output folder to browse generated images.
-                    Leave empty to use session images only.
-                </p>
             </div>
         </TabItem>
         <TabItem title="Gallery">

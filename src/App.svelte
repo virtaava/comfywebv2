@@ -7,7 +7,7 @@
     import DropFileContainer from "./containers/DropFileContainer.svelte";
     import SidebarContainer from "./containers/SidebarContainer.svelte";
   import WorkflowDocumentationPanel from "./components/WorkflowDocumentationPanel.svelte";
-    import GalleryContainer from "./containers/GalleryContainer.svelte";
+    import MainWorkspace from "./components/MainWorkspace.svelte";
     import NotificationToastComponent from "./components/NotificationToastComponent.svelte";
 
     onMount(() => {
@@ -38,5 +38,6 @@
     />
     <DropFileContainer />
     <SidebarContainer />
-    <GalleryContainer />
+    <!-- Main Workspace with Generation Progress and Previews -->
+    <MainWorkspace />
 </main>

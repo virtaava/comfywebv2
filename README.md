@@ -42,7 +42,7 @@ For complex workflows like multi-path conditional generation, advanced automatio
 
 ### 🖼️ **Enhanced Gallery**
 - Session-persistent gallery with automatic image collection
-- Browse ComfyUI's output directory
+- Track and view images generated through ComfyWeb interface
 - Click images to view their generation parameters
 
 ### 📸 **Image Handling**

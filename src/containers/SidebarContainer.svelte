@@ -6,9 +6,9 @@
         createComfyWorkflow,
         createPromptRequest,
         getPromptRequestUrl,
+        submitWorkflowForExecution,
     } from "../lib/api";
     import { type PromptError, type PromptResponse } from "../lib/comfy";
-    import { GalleryItem } from "../lib/gallery";
     import {
         generateGraphMetadata,
         WorkflowGenerateError,
@@ -18,7 +18,6 @@
     import {
         library,
         workflow,
-        gallery,
         errorMessage,
         serverHost,
         savedWorkflows,
@@ -47,38 +46,36 @@
         try {
             const graph = generateGraphMetadata(steps, $library);
             const req = createPromptRequest(graph, steps);
-            const res = await fetch(getPromptRequestUrl($serverHost), {
-                body: JSON.stringify(req),
-                method: "POST",
-            });
-            if (res.ok) {
-                const data = (await res.json()) as PromptResponse;
+            
+            // Use new submission function that tracks prompt IDs for gallery
+            const result = await submitWorkflowForExecution($serverHost, req);
+            
+            if (result.success && result.promptId) {
+                console.log('✅ [Workflow Execution] Workflow submitted successfully:', result.promptId);
                 
                 // Update generation state
                 generationState.set({
                     isGenerating: true,
-                    currentPromptId: data.prompt_id
+                    currentPromptId: result.promptId
                 });
                 
-                gallery.update((state) => {
-                    const item = GalleryItem.newQueued(
-                        data.prompt_id,
-                        R.clone(items),
-                    );
-                    state[data.prompt_id] = item;
-                    return state;
-                });
+                // Gallery integration happens automatically via addPromptToGallery() in submitWorkflowForExecution()
+                
+                // Update workflow controls
                 workflow.update((items) => {
                     for (const { step } of items) {
                         performControlAfterGenerate(step);
                     }
                     return items;
                 });
+                
+                console.log('🎯 [Gallery Integration] Prompt ID automatically tracked by gallery system:', result.promptId);
             } else {
-                const error: PromptError = await res.json();
-                errorMessage.set(formatPromptError(error));
+                console.error('❌ [Workflow Execution] Submission failed:', result.error);
+                errorMessage.set(result.error || 'Failed to submit workflow');
             }
         } catch (error) {
+            console.error('❌ [Workflow Execution] Unexpected error:', error);
             if (error instanceof WorkflowGenerateError) {
                 errorMessage.set(
                     `Could not generate a graph: ${error.message}`,
