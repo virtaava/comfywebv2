@@ -4,13 +4,34 @@
   import { Badge, Button, Spinner, Alert } from 'flowbite-svelte';
   import { RefreshOutline, ImageOutline } from 'flowbite-svelte-icons';
   
+  // DEBUG: Add debug state
+  let showDebugConsole = false;
+  let debugLogs: string[] = [];
+  let lastApiResponse: any = null;
+  
+  // DEBUG: Enhanced logging function
+  function debugLog(message: string, data?: any) {
+    const timestamp = new Date().toLocaleTimeString();
+    const logEntry = `[${timestamp}] ${message}`;
+    console.log(logEntry, data);
+    debugLogs = [...debugLogs, logEntry + (data ? ` ${JSON.stringify(data, null, 2)}` : '')].slice(-50); // Keep last 50 logs
+  }
+  
   // Subscribe to gallery state
   $: galleryState = $galleryHistory;
   $: currentServerHost = $serverHost;
   
   // Auto-refresh on mount and when server host changes
   onMount(() => {
+    debugLog('Gallery component mounted');
+    debugLog('Initial gallery state', { 
+      promptCount: galleryState.promptHistory.length, 
+      imageCount: galleryState.images.length,
+      lastRefresh: galleryState.lastRefresh 
+    });
+    
     if (galleryState.promptHistory.length > 0) {
+      debugLog('Auto-refreshing gallery on mount');
       refreshGalleryImages();
     }
   });
@@ -19,35 +40,133 @@
   let lastServerHost = $serverHost;
   $: if ($serverHost !== lastServerHost && galleryState.promptHistory.length > 0) {
     lastServerHost = $serverHost;
+    debugLog('Server host changed, refreshing gallery', { oldHost: lastServerHost, newHost: $serverHost });
     setTimeout(() => refreshGalleryImages(), 500); // Simple debounce
   }
   
   // Handle manual refresh
   async function handleRefresh() {
-    await refreshGalleryImages();
+    debugLog('Manual refresh triggered');
+    debugLog('Current prompt history', galleryState.promptHistory);
+    
+    try {
+      // Import gallery API for direct testing
+      const { createGalleryAPI } = await import('../lib/gallery-api');
+      const api = createGalleryAPI();
+      
+      // Test connection first
+      debugLog('Testing API connection...');
+      const connectionTest = await api.testConnection();
+      debugLog('Connection test result', connectionTest);
+      
+      // Test loading images for first prompt
+      if (galleryState.promptHistory.length > 0) {
+        const firstPrompt = galleryState.promptHistory[0];
+        debugLog('Testing image load for first prompt', firstPrompt);
+        
+        const result = await api.loadImagesForPrompts([firstPrompt]);
+        lastApiResponse = result;
+        debugLog('API Response for test prompt', result);
+        
+        if (result.images.length > 0) {
+          debugLog('Testing first image URL accessibility', result.images[0].url);
+          
+          // Test if the URL is accessible
+          try {
+            const imgTest = await fetch(result.images[0].url, { method: 'HEAD' });
+            debugLog('Image URL test result', { 
+              url: result.images[0].url, 
+              status: imgTest.status, 
+              statusText: imgTest.statusText 
+            });
+          } catch (urlError) {
+            debugLog('Image URL test failed', urlError.message);
+          }
+        }
+      }
+      
+      // Now do the actual refresh
+      await refreshGalleryImages();
+      debugLog('Gallery refresh completed');
+    } catch (error) {
+      debugLog('Manual refresh failed', error.message);
+    }
+  }
+  
+  // DEBUG: Test specific prompt ID
+  async function testPromptId() {
+    const promptId = prompt('Enter prompt ID to test:');
+    if (!promptId) return;
+    
+    debugLog('Testing specific prompt ID', promptId);
+    
+    try {
+      const { createGalleryAPI } = await import('../lib/gallery-api');
+      const api = createGalleryAPI();
+      const result = await api.loadImagesForPrompts([promptId]);
+      lastApiResponse = result;
+      debugLog('Test prompt result', result);
+    } catch (error) {
+      debugLog('Test prompt failed', error.message);
+    }
+  }
+  
+  // DEBUG: Test ComfyUI history API directly
+  async function testHistoryAPI() {
+    const promptId = galleryState.promptHistory[0];
+    if (!promptId) {
+      debugLog('No prompt ID to test');
+      return;
+    }
+    
+    debugLog('Testing ComfyUI history API directly for', promptId);
+    
+    const urls = [
+      `${$serverHost}/api/history/${promptId}`,
+      `${$serverHost}/history/${promptId}`
+    ];
+    
+    for (const url of urls) {
+      try {
+        debugLog('Testing URL', url);
+        const response = await fetch(url);
+        debugLog('Response status', { url, status: response.status, statusText: response.statusText });
+        
+        if (response.ok) {
+          const data = await response.json();
+          lastApiResponse = data;
+          debugLog('History API raw response', data);
+          break;
+        }
+      } catch (error) {
+        debugLog('History API test failed', { url, error: error.message });
+      }
+    }
   }
   
   // Handle image viewing in workspace
   function handleViewImage(image) {
-    console.log('[Gallery] View image clicked:', image);
-    console.log('[Gallery] Calling imageViewer.viewImage with:', image, galleryState.images);
+    debugLog('View image clicked', { filename: image.filename, url: image.url });
     
-    // Add alert for testing
-    alert('handleViewImage called! Check console for details.');
+    // Test image URL before viewing
+    const img = new Image();
+    img.onload = () => debugLog('Image loaded successfully in test');
+    img.onerror = () => debugLog('Image failed to load in test');
+    img.src = image.url;
     
     // Pass all gallery images for navigation
     imageViewer.viewImage(image, galleryState.images);
-    
-    console.log('[Gallery] Image viewer state after call:', $imageViewer);
   }
   
   // Handle image removal
   function handleRemoveImage(filename: string) {
+    debugLog('Remove image clicked', filename);
     galleryHistory.removeImage(filename);
   }
   
   // Clear all errors
   function clearErrors() {
+    debugLog('Clear errors clicked');
     galleryHistory.clearErrors();
   }
   
@@ -77,6 +196,67 @@
         </Badge>
       {/if}
     </div>
+  
+  <!-- DEBUG: Debug Console -->
+  {#if showDebugConsole}
+    <div class="mb-6 p-4 bg-yellow-900 rounded-lg border border-yellow-600">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-yellow-200 font-semibold">🔍 Gallery Debug Console</h3>
+        <div class="flex gap-2">
+          <Button size="xs" color="yellow" on:click={testPromptId}>Test Prompt ID</Button>
+          <Button size="xs" color="yellow" on:click={testHistoryAPI}>Test History API</Button>
+          <Button size="xs" color="red" on:click={() => debugLogs = []}>Clear Logs</Button>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Debug Info -->
+        <div class="bg-yellow-800 p-3 rounded text-xs">
+          <h4 class="text-yellow-200 font-medium mb-2">Current State</h4>
+          <div class="text-yellow-100 space-y-1">
+            <div>Prompts Tracked: {galleryState.promptHistory.length}</div>
+            <div>Images Loaded: {galleryState.images.length}</div>
+            <div>Loading: {galleryState.loading}</div>
+            <div>Errors: {galleryState.errors.length}</div>
+            <div>Server: {$serverHost}</div>
+            <div>Last Refresh: {galleryState.lastRefresh > 0 ? formatTimestamp(galleryState.lastRefresh) : 'Never'}</div>
+          </div>
+          
+          {#if galleryState.promptHistory.length > 0}
+            <h4 class="text-yellow-200 font-medium mt-3 mb-2">Tracked Prompts</h4>
+            <div class="text-yellow-100 text-xs space-y-1 max-h-32 overflow-y-auto">
+              {#each galleryState.promptHistory.slice(0, 5) as promptId}
+                <div class="font-mono">{promptId}</div>
+              {/each}
+              {#if galleryState.promptHistory.length > 5}
+                <div class="text-yellow-300">...and {galleryState.promptHistory.length - 5} more</div>
+              {/if}
+            </div>
+          {/if}
+        </div>
+        
+        <!-- Debug Logs -->
+        <div class="bg-yellow-800 p-3 rounded text-xs">
+          <h4 class="text-yellow-200 font-medium mb-2">Debug Logs</h4>
+          <div class="text-yellow-100 max-h-64 overflow-y-auto space-y-1 font-mono">
+            {#each debugLogs.slice(-20) as log}
+              <div class="border-b border-yellow-700 pb-1">{log}</div>
+            {/each}
+            {#if debugLogs.length === 0}
+              <div class="text-yellow-300 italic">No logs yet. Try refreshing gallery.</div>
+            {/if}
+          </div>
+        </div>
+      </div>
+      
+      {#if lastApiResponse}
+        <div class="mt-4 bg-yellow-800 p-3 rounded text-xs">
+          <h4 class="text-yellow-200 font-medium mb-2">Last API Response</h4>
+          <pre class="text-yellow-100 whitespace-pre-wrap text-xs overflow-x-auto">{JSON.stringify(lastApiResponse, null, 2)}</pre>
+        </div>
+      {/if}
+    </div>
+  {/if}
     
     <div class="flex items-center gap-3">
       {#if galleryState.loading}
@@ -95,6 +275,16 @@
       >
         <RefreshOutline class="w-4 h-4" />
         Refresh Gallery
+      </Button>
+      
+      <!-- DEBUG: Debug console toggle -->
+      <Button 
+        color="yellow" 
+        size="sm"
+        on:click={() => showDebugConsole = !showDebugConsole}
+        class="flex items-center gap-2"
+      >
+        🔍 Debug
       </Button>
     </div>
   </div>

@@ -44,11 +44,11 @@
     {
       "type": "Aggregate",
       "name": "Preview",
-      "description": "Performs VAEDecode and PreviewImage in a single step.",
-      "form": {},
+      "description": "Performs VAEDecode and SaveImage in a single step.",
+      "form": { "filename_prefix": "ComfyWebv2" },
       "nodes": [
         { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+        { "type": "SaveImage", "outputs": [], "formMapping": { "filename_prefix": "filename_prefix" } }
       ]
     }
   ],
@@ -97,11 +97,11 @@
     {
       "type": "Aggregate",
       "name": "Preview",
-      "description": "Performs VAEDecode and PreviewImage in a single step.",
-      "form": {},
+      "description": "Performs VAEDecode and SaveImage in a single step.",
+      "form": { "filename_prefix": "ComfyWebv2" },
       "nodes": [
         { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+        { "type": "SaveImage", "outputs": [], "formMapping": { "filename_prefix": "filename_prefix" } }
       ]
     }
   ],
@@ -164,11 +164,11 @@
     {
       "type": "Aggregate",
       "name": "Preview",
-      "description": "Performs VAEDecode and PreviewImage in a single step.",
-      "form": {},
+      "description": "Performs VAEDecode and SaveImage in a single step.",
+      "form": { "filename_prefix": "ComfyWebv2" },
       "nodes": [
         { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+        { "type": "SaveImage", "outputs": [], "formMapping": { "filename_prefix": "filename_prefix" } }
       ]
     }
   ],
@@ -222,11 +222,11 @@
     {
       "type": "Aggregate",
       "name": "Preview",
-      "description": "Performs VAEDecode and PreviewImage in a single step.",
-      "form": {},
+      "description": "Performs VAEDecode and SaveImage in a single step.",
+      "form": { "filename_prefix": "ComfyWebv2" },
       "nodes": [
         { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+        { "type": "SaveImage", "outputs": [], "formMapping": { "filename_prefix": "filename_prefix" } }
       ]
     }
   ],
@@ -280,11 +280,11 @@
     {
       "type": "Aggregate",
       "name": "Preview",
-      "description": "Performs VAEDecode and PreviewImage in a single step.",
-      "form": {},
+      "description": "Performs VAEDecode and SaveImage in a single step.",
+      "form": { "filename_prefix": "ComfyWebv2" },
       "nodes": [
         { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+        { "type": "SaveImage", "outputs": [], "formMapping": { "filename_prefix": "filename_prefix" } }
       ]
     }
   ],
@@ -338,11 +338,11 @@
     {
       "type": "Aggregate",
       "name": "Preview",
-      "description": "Performs VAEDecode and PreviewImage in a single step.",
-      "form": {},
+      "description": "Performs VAEDecode and SaveImage in a single step.",
+      "form": { "filename_prefix": "ComfyWebv2" },
       "nodes": [
         { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+        { "type": "SaveImage", "outputs": [], "formMapping": { "filename_prefix": "filename_prefix" } }
       ]
     }
   ],
@@ -401,11 +401,11 @@
     {
       "type": "Aggregate",
       "name": "Preview",
-      "description": "Performs VAEDecode and PreviewImage in a single step.",
-      "form": {},
+      "description": "Performs VAEDecode and SaveImage in a single step.",
+      "form": { "filename_prefix": "ComfyWebv2" },
       "nodes": [
         { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+        { "type": "SaveImage", "outputs": [], "formMapping": { "filename_prefix": "filename_prefix" } }
       ]
     }
   ],
@@ -464,11 +464,11 @@
     {
       "type": "Aggregate",
       "name": "Preview",
-      "description": "Performs VAEDecode and PreviewImage in a single step.",
-      "form": {},
+      "description": "Performs VAEDecode and SaveImage in a single step.",
+      "form": { "filename_prefix": "ComfyWebv2" },
       "nodes": [
         { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+        { "type": "SaveImage", "outputs": [], "formMapping": { "filename_prefix": "filename_prefix" } }
       ]
     }
   ],
@@ -517,11 +517,11 @@
     {
       "type": "Aggregate",
       "name": "Preview",
-      "description": "Performs VAEDecode and PreviewImage in a single step.",
-      "form": {},
+      "description": "Performs VAEDecode and SaveImage in a single step.",
+      "form": { "filename_prefix": "ComfyWebv2" },
       "nodes": [
         { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+        { "type": "SaveImage", "outputs": [], "formMapping": { "filename_prefix": "filename_prefix" } }
       ]
     }
   ],
@@ -575,11 +575,11 @@
     {
       "type": "Aggregate",
       "name": "Preview",
-      "description": "Performs VAEDecode and PreviewImage in a single step.",
-      "form": {},
+      "description": "Performs VAEDecode and SaveImage in a single step.",
+      "form": { "filename_prefix": "ComfyWebv2" },
       "nodes": [
         { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+        { "type": "SaveImage", "outputs": [], "formMapping": { "filename_prefix": "filename_prefix" } }
       ]
     }
   ],
@@ -638,11 +638,11 @@
     {
       "type": "Aggregate",
       "name": "Preview",
-      "description": "Performs VAEDecode and PreviewImage in a single step.",
-      "form": {},
+      "description": "Performs VAEDecode and SaveImage in a single step.",
+      "form": { "filename_prefix": "ComfyWebv2" },
       "nodes": [
         { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+        { "type": "SaveImage", "outputs": [], "formMapping": { "filename_prefix": "filename_prefix" } }
       ]
     }
   ],
@@ -706,11 +706,11 @@
     {
       "type": "Aggregate",
       "name": "Preview",
-      "description": "Performs VAEDecode and PreviewImage in a single step.",
-      "form": {},
+      "description": "Performs VAEDecode and SaveImage in a single step.",
+      "form": { "filename_prefix": "ComfyWebv2" },
       "nodes": [
         { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+        { "type": "SaveImage", "outputs": [], "formMapping": { "filename_prefix": "filename_prefix" } }
       ]
     }
   ],
@@ -774,11 +774,11 @@
     {
       "type": "Aggregate",
       "name": "Preview",
-      "description": "Performs VAEDecode and PreviewImage in a single step.",
-      "form": {},
+      "description": "Performs VAEDecode and SaveImage in a single step.",
+      "form": { "filename_prefix": "ComfyWebv2" },
       "nodes": [
         { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+        { "type": "SaveImage", "outputs": [], "formMapping": { "filename_prefix": "filename_prefix" } }
       ]
     }
   ],
@@ -832,11 +832,11 @@
     {
       "type": "Aggregate",
       "name": "Preview",
-      "description": "Performs VAEDecode and PreviewImage in a single step.",
-      "form": {},
+      "description": "Performs VAEDecode and SaveImage in a single step.",
+      "form": { "filename_prefix": "ComfyWebv2" },
       "nodes": [
         { "type": "VAEDecode", "outputs": ["IMAGE"], "formMapping": {} },
-        { "type": "PreviewImage", "outputs": [], "formMapping": {} }
+        { "type": "SaveImage", "outputs": [], "formMapping": { "filename_prefix": "filename_prefix" } }
       ]
     }
   ]
