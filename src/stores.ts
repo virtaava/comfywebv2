@@ -812,8 +812,151 @@ export function addPromptToGallery(promptId: string): void {
   galleryHistory.addPromptId(promptId);
 }
 
+// Image Viewer State Management
+export interface ImageViewerState {
+  isActive: boolean;
+  currentImage: import('./lib/gallery-api').GalleryImage | null;
+  galleryImages: import('./lib/gallery-api').GalleryImage[];
+  currentIndex: number;
+  zoomLevel: number;
+  showMetadata: boolean;
+}
+
+function createImageViewerStore() {
+  const initialState: ImageViewerState = {
+    isActive: false,
+    currentImage: null,
+    galleryImages: [],
+    currentIndex: 0,
+    zoomLevel: 1,
+    showMetadata: true
+  };
+
+  const { subscribe, set, update } = writable<ImageViewerState>(initialState);
+
+  return {
+    subscribe,
+    set,
+    update,
+    
+    // Show image in workspace viewer
+    viewImage: (image: import('./lib/gallery-api').GalleryImage, allImages: import('./lib/gallery-api').GalleryImage[] = []) => {
+      console.log('[ImageViewer] viewImage called with:', image, 'allImages count:', allImages.length);
+      
+      const galleryImages = allImages.length > 0 ? allImages : [image];
+      const currentIndex = galleryImages.findIndex(img => img.filename === image.filename && img.promptId === image.promptId);
+      
+      console.log('[ImageViewer] Setting state - isActive: true, currentIndex:', Math.max(0, currentIndex));
+      
+      update(state => {
+        const newState = {
+          ...state,
+          isActive: true,
+          currentImage: image,
+          galleryImages,
+          currentIndex: Math.max(0, currentIndex),
+          zoomLevel: 1
+        };
+        console.log('[ImageViewer] New state:', newState);
+        return newState;
+      });
+    },
+    
+    // Navigate to next image
+    nextImage: () => {
+      update(state => {
+        if (state.galleryImages.length <= 1) return state;
+        
+        const nextIndex = (state.currentIndex + 1) % state.galleryImages.length;
+        const nextImage = state.galleryImages[nextIndex];
+        
+        return {
+          ...state,
+          currentImage: nextImage,
+          currentIndex: nextIndex,
+          zoomLevel: 1
+        };
+      });
+    },
+    
+    // Navigate to previous image
+    prevImage: () => {
+      update(state => {
+        if (state.galleryImages.length <= 1) return state;
+        
+        const prevIndex = state.currentIndex === 0 ? state.galleryImages.length - 1 : state.currentIndex - 1;
+        const prevImage = state.galleryImages[prevIndex];
+        
+        return {
+          ...state,
+          currentImage: prevImage,
+          currentIndex: prevIndex,
+          zoomLevel: 1
+        };
+      });
+    },
+    
+    // Set zoom level
+    setZoom: (zoomLevel: number) => {
+      update(state => ({ ...state, zoomLevel: Math.max(0.1, Math.min(5, zoomLevel)) }));
+    },
+    
+    // Toggle metadata display
+    toggleMetadata: () => {
+      update(state => ({ ...state, showMetadata: !state.showMetadata }));
+    },
+    
+    // Close image viewer
+    close: () => {
+      update(state => ({
+        ...state,
+        isActive: false,
+        currentImage: null,
+        galleryImages: [],
+        currentIndex: 0,
+        zoomLevel: 1
+      }));
+    }
+  };
+}
+
+export const imageViewer = createImageViewerStore();
+
 // Import get function for accessing store values
 import { get } from 'svelte/store';
+
+// Workspace mode type
+export type WorkspaceMode = 'idle' | 'generating' | 'imageViewing';
+
+// Workspace mode store
+export const workspaceMode = writable<WorkspaceMode>('idle');
+
+// Update workspace mode when image viewer state changes
+let currentGenerationState = { isGenerating: false };
+let currentViewerState = { isActive: false };
+
+imageViewer.subscribe(state => {
+  currentViewerState = state;
+  if (state.isActive) {
+    workspaceMode.set('imageViewing');
+  } else if (currentGenerationState.isGenerating) {
+    workspaceMode.set('generating');
+  } else {
+    workspaceMode.set('idle');
+  }
+});
+
+// Update workspace mode when generation state changes
+generationState.subscribe(state => {
+  currentGenerationState = state;
+  if (state.isGenerating) {
+    workspaceMode.set('generating');
+  } else if (currentViewerState.isActive) {
+    workspaceMode.set('imageViewing');
+  } else {
+    workspaceMode.set('idle');
+  }
+});
 
 // Session persistence utilities
 export function clearComfyWebSession(): void {

@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { Button } from "flowbite-svelte";
-    import { galleryHistory, refreshGalleryImages } from "../stores";
+    import { galleryHistory, refreshGalleryImages, imageViewer } from "../stores";
 
     // Subscribe to our gallery state
     $: galleryState = $galleryHistory;
@@ -31,6 +31,16 @@
         if (diffMins < 60) return `${diffMins}m ago`;
         if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
         return date.toLocaleDateString();
+    }
+
+    // Handle image viewing in workspace
+    function handleViewImage(image) {
+        console.log('[Gallery Tab] View image clicked:', image);
+        
+        // Pass all gallery images for navigation
+        imageViewer.viewImage(image, galleryState.images);
+        
+        console.log('[Gallery Tab] Image viewer state after call:', $imageViewer);
     }
 
     // Handle image removal
@@ -100,11 +110,11 @@
                         <!-- Image Overlay with Actions -->
                         <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
                             <div class="flex gap-2">
-                                <!-- View Full Size -->
+                                <!-- View in Workspace -->
                                 <Button 
                                     size="xs" 
                                     color="blue"
-                                    on:click={() => window.open(image.url, '_blank')}
+                                    on:click={() => handleViewImage(image)}
                                 >
                                     View
                                 </Button>

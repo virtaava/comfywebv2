@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { galleryHistory, refreshGalleryImages, serverHost } from '../stores';
+  import { galleryHistory, refreshGalleryImages, serverHost, imageViewer } from '../stores';
   import { Badge, Button, Spinner, Alert } from 'flowbite-svelte';
   import { RefreshOutline, ImageOutline } from 'flowbite-svelte-icons';
   
@@ -25,6 +25,20 @@
   // Handle manual refresh
   async function handleRefresh() {
     await refreshGalleryImages();
+  }
+  
+  // Handle image viewing in workspace
+  function handleViewImage(image) {
+    console.log('[Gallery] View image clicked:', image);
+    console.log('[Gallery] Calling imageViewer.viewImage with:', image, galleryState.images);
+    
+    // Add alert for testing
+    alert('handleViewImage called! Check console for details.');
+    
+    // Pass all gallery images for navigation
+    imageViewer.viewImage(image, galleryState.images);
+    
+    console.log('[Gallery] Image viewer state after call:', $imageViewer);
   }
   
   // Handle image removal
@@ -172,11 +186,11 @@
             <!-- Image Overlay with Actions -->
             <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
               <div class="flex gap-2">
-                <!-- View Full Size -->
+                <!-- View in Workspace -->
                 <Button 
                   size="xs" 
                   color="blue"
-                  on:click={() => window.open(image.url, '_blank')}
+                  on:click={() => handleViewImage(image)}
                   class="flex items-center gap-1"
                 >
                   <ImageOutline class="w-3 h-3" />
