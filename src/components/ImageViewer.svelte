@@ -55,16 +55,69 @@
     }
   }
   
-  // Download image
-  function downloadImage() {
+  // Download image with enhanced cross-origin support
+  async function downloadImage() {
     if (!currentImage) return;
     
-    const link = document.createElement('a');
-    link.href = currentImage.url;
-    link.download = currentImage.filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    console.log('[Image Viewer] Download started for:', currentImage.filename);
+    console.log('[Image Viewer] Image URL:', currentImage.url);
+    
+    try {
+      // Try to fetch the image data first to handle CORS and ensure download
+      const response = await fetch(currentImage.url);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+      }
+      
+      // Get the image as a blob
+      const blob = await response.blob();
+      
+      // Create object URL for the blob
+      const blobUrl = URL.createObjectURL(blob);
+      
+      // Create download link
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = currentImage.filename;
+      
+      // Temporarily add to DOM and click
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the blob URL
+      setTimeout(() => {
+        URL.revokeObjectURL(blobUrl);
+      }, 100);
+      
+      console.log('✅ [Image Viewer] Download completed for:', currentImage.filename);
+      
+    } catch (error) {
+      console.error('❌ [Image Viewer] Download failed:', error);
+      
+      // Fallback: try direct link method
+      console.log('[Image Viewer] Attempting fallback download method...');
+      
+      try {
+        const link = document.createElement('a');
+        link.href = currentImage.url;
+        link.download = currentImage.filename;
+        link.target = '_blank'; // Fallback to opening in new tab if download fails
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log('⚠️ [Image Viewer] Fallback download attempted');
+      } catch (fallbackError) {
+        console.error('❌ [Image Viewer] Both download methods failed:', fallbackError);
+        
+        // Final fallback: open in new tab
+        window.open(currentImage.url, '_blank');
+        console.log('⚠️ [Image Viewer] Opened image in new tab as final fallback');
+      }
+    }
   }
   
   // Format timestamp

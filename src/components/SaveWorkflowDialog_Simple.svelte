@@ -15,16 +15,34 @@
   let workflowName = '';
   let saving = false;
   let error = '';
+  let hasUserEditedName = false; // Track if user has manually edited the name
 
-  // Auto-generate name based on current date/time
-  $: if (isOpen && !workflowName) {
+  // Auto-generate name only when dialog first opens and field is empty
+  $: if (isOpen && !hasUserEditedName && workflowName === '') {
     const now = new Date();
     workflowName = `Workflow ${now.toLocaleDateString()}`;
+    console.log('📝 [Save Dialog] Auto-generated name:', workflowName);
+  }
+
+  // Track when user manually edits the name
+  function handleNameInput(event: Event) {
+    hasUserEditedName = true;
+    workflowName = (event.target as HTMLInputElement).value;
+    console.log('📝 [Save Dialog] User edited name to:', workflowName);
   }
 
   async function handleSave() {
+    console.log('💾 [Save Dialog] Attempting to save workflow:', workflowName.trim());
+    
     if (!workflowName.trim()) {
       error = 'Workflow name is required';
+      console.log('🚨 [Save Dialog] Save failed: name required');
+      return;
+    }
+
+    if (workflowSteps.length === 0) {
+      error = 'Cannot save empty workflow';
+      console.log('🚨 [Save Dialog] Save failed: no workflow steps');
       return;
     }
 
@@ -32,15 +50,18 @@
     error = '';
 
     try {
+      console.log('💾 [Save Dialog] Calling workflowStorage.saveWorkflow...');
       const id = await workflowStorage.saveWorkflow(
         workflowName.trim(),
         workflowSteps
       );
 
+      console.log('✅ [Save Dialog] Workflow saved successfully with ID:', id);
       dispatch('saved', { id, name: workflowName.trim() });
       handleClose();
     } catch (err) {
-      error = 'Failed to save workflow';
+      console.error('🚨 [Save Dialog] Save error:', err);
+      error = err instanceof Error ? err.message : 'Failed to save workflow';
     } finally {
       saving = false;
     }
@@ -48,6 +69,7 @@
 
   function handleClose() {
     workflowName = '';
+    hasUserEditedName = false; // Reset edit tracking
     error = '';
     saving = false;
     isOpen = false;
@@ -65,7 +87,8 @@
       <Label for="workflow-name" class="text-white mb-2">Workflow Name</Label>
       <Input
         id="workflow-name"
-        bind:value={workflowName}
+        value={workflowName}
+        on:input={handleNameInput}
         placeholder="Enter workflow name..."
         disabled={saving}
       />

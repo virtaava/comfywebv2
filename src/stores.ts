@@ -585,50 +585,45 @@ export const generationState = writable<{
   currentPromptId: undefined
 });
 
-// Saved workflows store (localStorage for permanent storage)
-function createSavedWorkflowsStore() {
-  const STORAGE_KEY = 'comfyweb_saved_workflows';
+// Saved workflows store - reactive store that updates from WorkflowStorageManager
+// Create a simple reactive store that gets updated when storage changes
+export const workflowStorageTrigger = writable(0);
+
+// Create a reactive store that updates when triggered
+function createReactiveSavedWorkflowsStore() {
+  const { subscribe, set } = writable<import('./lib/workflow-storage').WorkflowMetadata[]>([]);
   
-  let initialValue: import('./lib/workflow-storage').WorkflowMetadata[] = [];
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed)) {
-        initialValue = parsed;
-      }
-    }
-  } catch (error) {
-    console.warn('Failed to restore saved workflows:', error);
-  }
-
-  const { subscribe, set, update } = writable(initialValue);
-
-  return {
-    subscribe,
-    set: (value: import('./lib/workflow-storage').WorkflowMetadata[]) => {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
-      } catch (error) {
-        console.warn('Failed to save workflows list:', error);
-      }
-      set(value);
-    },
-    update: (updater: (value: import('./lib/workflow-storage').WorkflowMetadata[]) => import('./lib/workflow-storage').WorkflowMetadata[]) => {
-      update((current) => {
-        const newValue = updater(current);
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(newValue));
-        } catch (error) {
-          console.warn('Failed to save workflows list:', error);
-        }
-        return newValue;
-      });
+  // Function to update from WorkflowStorageManager
+  const updateFromStorage = async () => {
+    try {
+      const { workflowStorage } = await import('./lib/workflow-storage');
+      const metadata = workflowStorage.getWorkflowMetadata();
+      console.log('📋 [Reactive Store] Updated workflow metadata from WorkflowStorageManager:', metadata.length);
+      set(metadata);
+    } catch (error) {
+      console.error('❌ [Reactive Store] Failed to get workflow metadata:', error);
+      set([]);
     }
   };
+  
+  // Update when trigger changes
+  workflowStorageTrigger.subscribe(() => {
+    updateFromStorage();
+  });
+  
+  // Initial load
+  updateFromStorage();
+  
+  return { subscribe };
 }
 
-export const savedWorkflows = createSavedWorkflowsStore();
+export const savedWorkflows = createReactiveSavedWorkflowsStore();
+
+// Utility function to trigger savedWorkflows store update
+export function triggerWorkflowStorageUpdate(): void {
+  workflowStorageTrigger.update(n => n + 1);
+  console.log('🔄 [Storage Trigger] Triggered workflow storage update');
+}
 
 // Workflow Documentation Store
 export const workflowDocumentation = writable<WorkflowDoc[]>([]);

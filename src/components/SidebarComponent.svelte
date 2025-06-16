@@ -16,11 +16,14 @@
     import WorkflowComponent from "./WorkflowComponent.svelte";
     import GalleryTab from "./GalleryTab.svelte";
     import WorkflowDocumentationPanel from "./WorkflowDocumentationPanel.svelte";
+    import WorkflowManagement from "./WorkflowManagement.svelte";
 
     export let workflow: WorkflowItem[];
     export let library: DeepReadonly<NodeLibrary>;
     export let serverHost: string;
     export let generationState: { isGenerating: boolean; currentPromptId?: string };
+
+    let showWorkflowManagement = false;
 
     const dispatch = createEventDispatcher<{
         enqueue: WorkflowItem[];
@@ -30,6 +33,7 @@
         exportWorkflows: void;
         importWorkflows: Event;
         showError: string;
+        refreshSavedWorkflows: void;
     }>();
 
     let fileInput: HTMLInputElement;
@@ -70,24 +74,57 @@
             );
         } else if (NodePickerValue.isSavedWorkflow(value)) {
             // Load saved workflow
-            // const savedWorkflow = workflowStorage.loadWorkflow(value.metadata.id);
-            // if (savedWorkflow) {
-            //     const result = R.reduce<WorkflowStep, string | undefined>(
-            //         savedWorkflow.steps,
-            //         (acc, step) => acc ?? validateStep(step),
-            //         undefined,
-            //     );
-            //     if (result !== undefined) {
-            //         dispatch("showError", result);
-            //         return;
-            //     }
+            const savedWorkflow = workflowStorage.loadWorkflow(value.metadata.id);
+            if (savedWorkflow) {
+                const result = R.reduce<WorkflowStep, string | undefined>(
+                    savedWorkflow.steps,
+                    (acc, step) => acc ?? validateStep(step),
+                    undefined,
+                );
+                if (result !== undefined) {
+                    dispatch("showError", result);
+                    return;
+                }
 
-            //     workflow = savedWorkflow.steps.map((step) =>
-            //         WorkflowItem.fromStep(R.clone(step), true),
-            //     );
-            // } else {
-            //     dispatch("showError", "Could not load saved workflow");
-            // }
+                workflow = savedWorkflow.steps.map((step) =>
+                    WorkflowItem.fromStep(R.clone(step), true),
+                );
+                
+                console.log('✅ [My Workflows] Loaded saved workflow:', savedWorkflow.name);
+            } else {
+                dispatch("showError", "Could not load saved workflow");
+            }
+        }
+    }
+
+    function handleWorkflowManagementClose() {
+        showWorkflowManagement = false;
+    }
+
+    function handleWorkflowsChanged() {
+        dispatch('refreshSavedWorkflows');
+    }
+
+    function handleLoadWorkflow(event: CustomEvent<{ id: string }>) {
+        const savedWorkflow = workflowStorage.loadWorkflow(event.detail.id);
+        if (savedWorkflow) {
+            const result = R.reduce<WorkflowStep, string | undefined>(
+                savedWorkflow.steps,
+                (acc, step) => acc ?? validateStep(step),
+                undefined,
+            );
+            if (result !== undefined) {
+                dispatch("showError", result);
+                return;
+            }
+
+            workflow = savedWorkflow.steps.map((step) =>
+                WorkflowItem.fromStep(R.clone(step), true),
+            );
+            
+            console.log('✅ [Workflow Management] Loaded workflow from management:', savedWorkflow.name);
+        } else {
+            dispatch("showError", "Could not load saved workflow");
         }
     }
 
@@ -152,6 +189,14 @@
                 
                 <h2 class="mt-4">Workflow Management</h2>
                 <Button
+                    color="purple"
+                    size="sm"
+                    on:click={() => showWorkflowManagement = true}
+                    disabled={$savedWorkflows.length === 0}
+                >
+                    Manage Workflows ({$savedWorkflows.length})
+                </Button>
+                <Button
                     color="blue"
                     size="sm"
                     on:click={() => dispatch("exportWorkflows")}
@@ -214,3 +259,12 @@
         </div>
     </Tabs>
 </div>
+
+<!-- Workflow Management Modal -->
+<WorkflowManagement
+    bind:isOpen={showWorkflowManagement}
+    workflows={$savedWorkflows}
+    on:close={handleWorkflowManagementClose}
+    on:workflowsChanged={handleWorkflowsChanged}
+    on:loadWorkflow={handleLoadWorkflow}
+/>

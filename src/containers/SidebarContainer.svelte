@@ -24,7 +24,7 @@
         generationState,
     } from "../stores";
     import { interruptGeneration } from "../lib/api";
-    import { workflowStorage } from "../lib/workflow-storage-filesystem";
+    import { workflowStorage } from "../lib/workflow-storage";
     import SaveWorkflowDialog from "../components/SaveWorkflowDialog_Simple.svelte";
     import { infoMessage } from "../stores";
 
@@ -32,14 +32,53 @@
 
     let showSaveDialog = false;
 
-    // Load saved workflows on component mount
-    function loadSavedWorkflows() {
-        const metadata = workflowStorage.getWorkflowMetadata();
-        savedWorkflows.set(metadata);
+    // Debug reactive statement
+    $: console.log('🔧 [Debug] showSaveDialog changed to:', showSaveDialog);
+
+    // CONSOLIDATION: Simplified workflow refresh - no longer needed!
+    // The savedWorkflows store is now derived from WorkflowStorageManager
+    // and updates automatically. Just trigger the update.
+    function refreshSavedWorkflows() {
+        // Import the trigger function
+        import('../stores').then(({ triggerWorkflowStorageUpdate }) => {
+            triggerWorkflowStorageUpdate();
+        });
+        console.log('🔄 [My Workflows] Triggered workflow storage update (consolidated system)');
     }
     
     // Load saved workflows on init
-    loadSavedWorkflows();
+    refreshSavedWorkflows();
+
+    // Debug utility - expose to window for console access
+    if (typeof window !== 'undefined') {
+        (window as any).comfyWebDebug = {
+            clearWorkflows: () => {
+                workflowStorage.clearAllWorkflows();
+                refreshSavedWorkflows();
+                console.log('🧹 [Debug] All workflows cleared. Refresh saved workflows.');
+            },
+            listWorkflows: () => {
+                const metadata = workflowStorage.getWorkflowMetadata();
+                console.log('📋 [Debug] Current workflows:', metadata);
+                return metadata;
+            },
+            inspectLocalStorage: () => {
+                const data = localStorage.getItem('comfyweb_saved_workflows');
+                console.log('🔍 [Debug] Raw localStorage data:', data);
+                if (data) {
+                    try {
+                        const parsed = JSON.parse(data);
+                        console.log('🔍 [Debug] Parsed localStorage data:', parsed);
+                        return parsed;
+                    } catch (error) {
+                        console.error('🚨 [Debug] Failed to parse localStorage data:', error);
+                    }
+                }
+                return null;
+            }
+        };
+        console.log('🔧 [Debug] Debug utilities available: window.comfyWebDebug.clearWorkflows(), window.comfyWebDebug.listWorkflows(), window.comfyWebDebug.inspectLocalStorage()');
+    }
 
     async function handleEnqueue(items: WorkflowItem[]) {
         const steps = items.map((item) => item.step);
@@ -89,8 +128,11 @@
     }
 
     function handleSaveWorkflow(items: DeepReadonly<WorkflowItem[]>) {
+        console.log('🔧 [Debug] handleSaveWorkflow called with', items.length, 'items');
+        console.log('🔧 [Debug] Setting showSaveDialog to true');
         // Show save dialog
         showSaveDialog = true;
+        console.log('🔧 [Debug] showSaveDialog is now:', showSaveDialog);
     }
 
     async function handleStopGeneration() {
@@ -123,9 +165,10 @@
         try {
             const result = await workflowStorage.importWorkflows(file);
             if (result.success > 0) {
-                infoMessage.set(`Imported ${result.success} workflow(s) successfully!`);
-                loadSavedWorkflows(); // Refresh the list
-            }
+            infoMessage.set(`Imported ${result.success} workflow(s) successfully!`);
+            // CONSOLIDATION: Trigger automatic update - no manual refresh needed
+              // refreshSavedWorkflows(); // Not needed anymore - WorkflowStorageManager triggers update
+      }
             if (result.errors.length > 0) {
                 errorMessage.set(`Import completed with errors: ${result.errors.join(', ')}`);
             }
@@ -138,9 +181,10 @@
     }
 
     function handleSaveWorkflowLocal(event: CustomEvent<{ id: string; name: string }>) {
+        console.log('🔧 [Debug] handleSaveWorkflowLocal called with:', event.detail);
         const { name } = event.detail;
         infoMessage.set(`Workflow "${name}" saved successfully!`);
-        loadSavedWorkflows(); // Refresh the saved workflows list
+        refreshSavedWorkflows(); // Refresh the saved workflows list
     }
 
     function handleSaveAsComfyUIWorkflow(items: DeepReadonly<WorkflowItem[]>) {
@@ -220,6 +264,7 @@
     on:exportWorkflows={handleExportWorkflows}
     on:importWorkflows={(ev) => handleImportWorkflows(ev.detail)}
     on:showError={(ev) => handleShowError(ev.detail)}
+    on:refreshSavedWorkflows={refreshSavedWorkflows}
 />
 
 <!-- SaveWorkflowDialog enabled with simple version -->
@@ -227,5 +272,8 @@
     bind:isOpen={showSaveDialog}
     workflowSteps={$workflow.map(item => item.step)}
     on:saved={handleSaveWorkflowLocal}
-    on:close={() => showSaveDialog = false}
+    on:close={() => {
+        console.log('🔧 [Debug] Dialog close event triggered');
+        showSaveDialog = false;
+    }}
 />
