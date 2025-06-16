@@ -10,6 +10,26 @@ ComfyWeb v2 transforms ComfyUI's complex node-graph system into an intuitive, fo
 
 ComfyWeb v2 is an enhanced version of the original [ComfyWeb](https://github.com/jac3km4/comfyweb) by [@jac3km4](https://github.com/jac3km4), with additional features and improvements for streamlined AI image generation.
 
+## 📖 **Complete User Guide**
+
+**For detailed instructions, tutorials, and feature explanations, see the comprehensive:**
+
+### 📚 **[ComfyWeb V2 User Manual](ComfyWebV2_User_Manual.md)**
+
+The user manual covers:
+- **Template-Card relationship** - How workflows are structured
+- **14 Professional Templates** - Complete library across 5 categories  
+- **Gallery System** - Session-persistent image collection
+- **Image Upload & Preview** - Professional drag-drop interface
+- **Workflow Import** - ComfyUI JSON workflow integration
+- **Missing Node Detection** - Smart installation guidance
+- **Step-by-step tutorials** - From beginner to advanced usage
+- **Troubleshooting guide** - Common issues and solutions
+
+**👆 Start there for complete usage instructions!**
+
+---
+
 ## 🎯 What ComfyWeb v2 Is Designed For
 
 ### ✅ **Ideal Use Cases**
@@ -152,7 +172,7 @@ npm run dev
 - ControlNet - Guided generation with control inputs
 - Professional Portrait - Optimized portrait generation
 
-## 📖 Usage Guide
+## 📖 Quick Usage Guide
 
 ### Basic Workflow
 1. **Select Template** - Choose from organized template categories
@@ -172,6 +192,8 @@ When importing workflows that exceed ComfyWeb v2's capabilities:
 - **Missing Node Dialog** - Shows required extensions and installation info
 - **Complexity Warning** - Indicates workflows better suited for ComfyUI
 - **Simplification Suggestions** - Guidance for workflow adaptation
+
+**📚 For complete instructions, see the [User Manual](ComfyWebV2_User_Manual.md)**
 
 ## 🛠️ Technical Details
 
@@ -234,6 +256,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 🔗 Resources
 
+- **📚 [Complete User Manual](ComfyWebV2_User_Manual.md)** - Detailed usage guide
 - **Original ComfyWeb**: https://github.com/jac3km4/comfyweb
 - **ComfyUI**: https://github.com/comfyanonymous/ComfyUI
 - **Support**: GitHub Issues
