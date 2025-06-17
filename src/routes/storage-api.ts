@@ -139,12 +139,15 @@ async function handleWorkflowRequests(req: any, res: any, method: string, id?: s
     switch (method) {
       case 'GET':
         const workflows = await appDataStorage.loadWorkflows();
-        sendJson(res, 200, {
-          success: true,
-          data: workflows,
-          count: workflows.length,
-          timestamp: new Date().toISOString()
+        // Convert array to object format expected by frontend
+        const workflowsObject = {};
+        workflows.forEach(workflow => {
+          if (workflow.id) {
+            workflowsObject[workflow.id] = workflow;
+          }
         });
+        
+        sendJson(res, 200, workflowsObject);
         break;
 
       case 'POST':
@@ -160,11 +163,8 @@ async function handleWorkflowRequests(req: any, res: any, method: string, id?: s
         const workflowId = await appDataStorage.saveWorkflow(workflow);
         sendJson(res, 200, {
           success: true,
-          data: {
-            id: workflowId,
-            message: 'Workflow saved successfully'
-          },
-          timestamp: new Date().toISOString()
+          id: workflowId,
+          message: 'Workflow saved successfully'
         });
         break;
 

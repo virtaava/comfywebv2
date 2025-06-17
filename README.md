@@ -1,8 +1,26 @@
 # ComfyWeb v2 - Enhanced Workflow Interface
 
-**A form-based approach to ComfyUI workflows with comprehensive image inspection tools**
+**A form-based approach to ComfyUI workflows with persistent storage and comprehensive image inspection tools**
 
-![ComfyWeb v2 Header](https://img.shields.io/badge/ComfyWeb-v2.0-purple?style=for-the-badge) ![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge) ![ComfyUI](https://img.shields.io/badge/ComfyUI-Compatible-green?style=for-the-badge)
+![ComfyWeb v2 Header](https://img.shields.io/badge/ComfyWeb-v2.0-purple?style=for-the-badge) ![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge) ![ComfyUI](https://img.shields.io/badge/ComfyUI-Compatible-green?style=for-the-badge) ![Storage](https://img.shields.io/badge/Storage-AppData-orange?style=for-the-badge)
+
+---
+
+## 💾 **Persistent Workflow Storage**
+
+### **Enterprise-Grade Data Persistence**
+ComfyWeb v2 features **persistent AppData storage** that keeps your workflows safe across browser sessions:
+
+- **🗂️ Filesystem Storage** - Workflows saved to your system's AppData directory
+- **🔄 Cross-Session Persistence** - Data survives browser restarts, clears, and incognito mode
+- **🌐 Cross-Platform Support** - Automatic path resolution for Windows, Mac, and Linux
+- **🛡️ Dual Storage System** - AppData primary with localStorage fallback for reliability
+- **📦 Automatic Migration** - Seamlessly migrates existing browser-stored workflows
+
+### **Storage Locations:**
+- **Windows**: `%APPDATA%\ComfyWebV2\workflows\`
+- **Mac**: `~/Library/Application Support/ComfyWebV2/workflows/`
+- **Linux**: `~/.config/ComfyWebV2/workflows/`
 
 ---
 
@@ -65,18 +83,26 @@ Each template includes optimized settings, time estimates, and difficulty indica
 ## 🛠️ **Workflow Management**
 
 ![Manage Tab](docs/images/Manage_tab_025-06-17%20110743.png)
-*Comprehensive workflow management tools*
+*Comprehensive workflow management with persistent storage*
 
 ### **Management Features:**
-- **💾 Save Workflows** - Store custom configurations for reuse
+- **💾 Save Workflows** - Store custom configurations permanently to filesystem
 - **📥 Import/Export** - Work with ComfyUI JSON files
-- **🔄 Workflow Organization** - Manage saved workflows efficiently
+- **🔄 Workflow Organization** - Professional workflow management with metadata
 - **🧹 Workspace Control** - Clear workspace to start fresh
 - **⚙️ Settings** - Configure ComfyUI server connection
+- **🗂️ Persistent Storage** - Workflows saved to AppData directory, never lost
 
 ---
 
 ## 🆕 **Enhanced Features in v2**
+
+### **Persistent Storage System**
+- AppData filesystem storage for permanent workflow preservation
+- Cross-platform compatibility with automatic path detection
+- Dual storage system (AppData + localStorage) for maximum reliability
+- Automatic migration from browser storage to filesystem
+- Professional data management with indexing and metadata
 
 ### **Image Inspection Tools**
 - Complete metadata viewing with parameter access
@@ -97,7 +123,7 @@ Each template includes optimized settings, time estimates, and difficulty indica
 - Error prevention through interface design
 
 ### **Advanced Management**
-- Local workflow storage with browser persistence
+- Professional workflow storage with filesystem persistence
 - Session state recovery after refresh
 - Drag-and-drop ComfyUI workflow import
 - Missing node detection with guidance
@@ -122,6 +148,7 @@ The user manual includes:
 - **Step-by-step usage tutorials**
 - **Image viewer and gallery system guides**
 - **Workflow import and management instructions**
+- **Persistent storage and migration guides**
 - **Troubleshooting and common solutions**
 
 ---
@@ -135,6 +162,7 @@ The user manual includes:
 - Quick iteration on prompts and basic parameters
 - Standard workflows (SDXL, ControlNet, LoRA integration)
 - Image inspection with metadata analysis
+- Professional workflow management requiring data persistence
 
 ### **Consider ComfyUI Direct For:**
 - Complex conditional workflows with branching logic
@@ -191,6 +219,16 @@ npm run dev
 
 Access the interface at http://localhost:5173
 
+### **First Run - AppData Storage Setup**
+
+ComfyWeb v2 automatically:
+1. **Creates AppData directories** in your system's standard location
+2. **Migrates existing workflows** from browser storage to filesystem
+3. **Sets up persistent storage** for all future workflows
+4. **Provides fallback** to browser storage if AppData is unavailable
+
+No manual configuration required - storage is automatically managed!
+
 ---
 
 ## 📖 **Basic Usage**
@@ -201,13 +239,14 @@ Access the interface at http://localhost:5173
 3. **Upload Images** - Drag images for image-to-image workflows
 4. **Generate** - Start generation with real-time monitoring
 5. **Inspect Results** - Use image viewer for detailed analysis
-6. **Save Configuration** - Store successful setups for future use
+6. **Save Configuration** - Store workflows permanently to filesystem
 
 ### **Additional Features:**
 - **Import Workflows** - Load ComfyUI JSON files
 - **Session Recovery** - Continue work after browser refresh
 - **Gallery Management** - Organize and browse generated images
 - **Progress Control** - Monitor and stop generation as needed
+- **Persistent Storage** - All workflows automatically saved to AppData
 
 ---
 
@@ -218,13 +257,22 @@ Access the interface at http://localhost:5173
 - **Build Tool**: Vite 5.4.1 with single-file output
 - **Styling**: Tailwind CSS 3.4.9 + Flowbite components
 - **Integration**: ComfyUI HTTP API + WebSocket connectivity
+- **Storage**: AppData filesystem storage with localStorage fallback
 
 ### **Architecture**
 - Form-based UI layer over ComfyUI's node system
 - Workflow-to-form transformation engine
 - Template library with predefined configurations
-- Session management and local storage
+- Persistent AppData storage system with cross-platform support
+- Dual storage architecture for maximum reliability
 - Image inspection with metadata extraction
+
+### **Storage Architecture**
+- **Primary Storage**: AppData filesystem directories
+- **Fallback Storage**: Browser localStorage for compatibility
+- **Migration System**: Automatic transition from browser to filesystem
+- **Data Format**: JSON workflow files with metadata indexing
+- **Cross-Platform**: Automatic path detection for Windows/Mac/Linux
 
 ---
 
@@ -244,13 +292,17 @@ npm run dev
 1. Fork the repository
 2. Create a feature branch
 3. Test changes with real ComfyUI workflows
-4. Submit a pull request with clear descriptions
+4. Ensure AppData storage compatibility
+5. Submit a pull request with clear descriptions
 
 ---
 
 ## 📝 **Version History**
 
 ### **v2.0.0 - Current Release**
+- **🆕 Persistent AppData Storage** - Filesystem storage with cross-platform support
+- **🆕 Dual Storage System** - AppData primary with localStorage fallback
+- **🆕 Automatic Migration** - Seamless transition from browser storage
 - Enhanced image viewer with metadata access and zoom controls
 - Generation control with stop functionality and real-time monitoring
 - Local workflow storage and management
@@ -272,7 +324,7 @@ npm run dev
 **[@comfyanonymous](https://github.com/comfyanonymous)** - [ComfyUI](https://github.com/comfyanonymous/ComfyUI) platform
 
 ### **v2 Development**
-**[@virtaava](https://github.com/virtaava)** - Enhanced features and functionality
+**[@virtaava](https://github.com/virtaava)** - Enhanced features and persistent storage system
 
 ---
 
@@ -291,4 +343,4 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
-*A focused approach to AI image generation workflows with ComfyUI.*
+*A focused approach to AI image generation workflows with ComfyUI and enterprise-grade data persistence.*

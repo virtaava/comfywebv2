@@ -26,6 +26,141 @@ export interface WorkflowMetadata {
 export class WorkflowStorageManager {
   private readonly STORAGE_KEY = 'comfyweb_saved_workflows';
   private readonly METADATA_KEY = 'comfyweb_workflow_metadata';
+  private readonly APPDATA_BASE_URL = '/api/storage'; // AppData API endpoint
+
+  /**
+   * Check if AppData storage is available
+   */
+  private async isAppDataAvailable(): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.APPDATA_BASE_URL}/health`);
+      return response.ok;
+    } catch (error) {
+      console.warn('📂 [AppData] Storage not available, using localStorage fallback');
+      return false;
+    }
+  }
+
+  /**
+   * Save workflow to AppData storage
+   */
+  private async saveToAppData(workflow: any): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.APPDATA_BASE_URL}/workflows`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(workflow)
+      });
+      
+      if (response.ok) {
+        console.log('💾 [AppData] Workflow saved to AppData:', workflow.id);
+        return true;
+      } else {
+        console.warn('⚠️ [AppData] Save failed, status:', response.status);
+        return false;
+      }
+    } catch (error) {
+      console.warn('⚠️ [AppData] Save error:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Load workflows from AppData storage
+   */
+  private async loadFromAppData(): Promise<Record<string, any>> {
+    try {
+      const response = await fetch(`${this.APPDATA_BASE_URL}/workflows`);
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('📂 [AppData] Raw API response:', { hasSuccess: 'success' in result, hasData: 'data' in result, isArray: Array.isArray(result) });
+        
+        // Handle different response formats
+        let workflowArray;
+        if (result.success && Array.isArray(result.data)) {
+          // New format: { success: true, data: [...] }
+          workflowArray = result.data;
+          console.log('📂 [AppData] Using new API format with data wrapper');
+        } else if (Array.isArray(result)) {
+          // Direct array format: [...]
+          workflowArray = result;
+          console.log('📂 [AppData] Using direct array format');
+        } else {
+          // Assume it's already a Record<string, object>
+          console.log('📂 [AppData] Using Record format');
+          return result;
+        }
+        
+        // Convert array to Record<string, object>
+        const workflows = {};
+        for (const workflow of workflowArray) {
+          if (workflow && workflow.id) {
+            workflows[workflow.id] = workflow;
+          }
+        }
+        
+        console.log('📂 [AppData] Loaded workflows from AppData:', Object.keys(workflows).length);
+        console.log('📂 [AppData] Sample workflow structure:', Object.keys(workflows)[0] ? Object.keys(workflows[Object.keys(workflows)[0]]) : 'none');
+        return workflows;
+      } else {
+        console.warn('⚠️ [AppData] Load failed, status:', response.status);
+        return {};
+      }
+    } catch (error) {
+      console.warn('⚠️ [AppData] Load error:', error);
+      return {};
+    }
+  }
+
+  /**
+   * Migrate existing localStorage data to AppData
+   */
+  private async migrateToAppData(): Promise<void> {
+    console.log('🔄 [Migration] Starting localStorage to AppData migration...');
+    
+    const localWorkflows = this.getLocalStorageWorkflows();
+    if (Object.keys(localWorkflows).length === 0) {
+      console.log('📂 [Migration] No localStorage workflows to migrate');
+      return;
+    }
+    
+    console.log(`🔄 [Migration] Migrating ${Object.keys(localWorkflows).length} workflows to AppData`);
+    
+    let migrated = 0;
+    for (const [id, workflow] of Object.entries(localWorkflows)) {
+      const success = await this.saveToAppData(workflow);
+      if (success) {
+        migrated++;
+        console.log(`✅ [Migration] Migrated workflow: ${workflow.name}`);
+      } else {
+        console.warn(`❌ [Migration] Failed to migrate workflow: ${workflow.name}`);
+      }
+    }
+    
+    console.log(`🔄 [Migration] Migration complete: ${migrated}/${Object.keys(localWorkflows).length} workflows migrated`);
+    
+    if (migrated > 0) {
+      // Mark migration as completed
+      localStorage.setItem('comfyweb_appdata_migrated', 'true');
+    }
+  }
+
+  /**
+   * Get workflows from localStorage only (for migration and fallback)
+   */
+  private getLocalStorageWorkflows(): Record<string, any> {
+    try {
+      const data = localStorage.getItem(this.STORAGE_KEY);
+      if (!data) return {};
+      
+      const parsed = JSON.parse(data);
+      return typeof parsed === 'object' && parsed !== null ? parsed : {};
+    } catch (error) {
+      console.error('❌ [localStorage] Failed to load workflows:', error);
+      return {};
+    }
+  }
 
   /**
    * Serialize workflow steps for localStorage
@@ -137,7 +272,7 @@ export class WorkflowStorageManager {
     description?: string,
     tags?: string[]
   ): Promise<string> {
-    console.log('📋 [Workflow Storage] Saving workflow:', { name, stepCount: steps.length, description });
+    console.log('📋 [Workflow Storage] Saving workflow with dual storage:', { name, stepCount: steps.length, description });
     
     // CRITICAL: Pre-save validation
     if (!Array.isArray(steps) || steps.length === 0) {
@@ -190,8 +325,16 @@ export class WorkflowStorageManager {
         allKeys: Object.keys(workflow)
       });
 
-      // Save to localStorage
-      const workflows = this.getAllWorkflows(true); // Skip migration during save
+      // DUAL STORAGE: Try AppData first, then localStorage
+      const appDataAvailable = await this.isAppDataAvailable();
+      let appDataSuccess = false;
+      
+      if (appDataAvailable) {
+        appDataSuccess = await this.saveToAppData(workflow);
+      }
+      
+      // Always save to localStorage as backup
+      const workflows = await this.getAllWorkflows(true); // Skip migration during save
       workflows[id] = workflow;
       
       console.log('🔍 [Save Debug] Workflow before stringifying:', {
@@ -244,7 +387,12 @@ export class WorkflowStorageManager {
       }
       
       localStorage.setItem(this.STORAGE_KEY, serializedData);
-      console.log('📋 [Workflow Storage] Saved to localStorage');
+      
+      console.log('💾 [Workflow Storage] Saved to:', {
+        appData: appDataSuccess,
+        localStorage: true,
+        primary: appDataSuccess ? 'AppData' : 'localStorage'
+      });
 
       // CRITICAL: Comprehensive post-save verification
       const verifyData = localStorage.getItem(this.STORAGE_KEY);
@@ -269,7 +417,7 @@ export class WorkflowStorageManager {
       console.log('📋 [Workflow Storage] VERIFICATION: Steps sample:', savedWorkflow.steps.slice(0, 2).map(s => s.nodeType));
 
       // Update metadata index
-      this.updateMetadataIndex();
+      await this.updateMetadataIndex();
       console.log('📋 [Workflow Storage] Updated metadata index');
       
       // CONSOLIDATION: Trigger store update for UI reactivity
@@ -298,38 +446,36 @@ export class WorkflowStorageManager {
   /**
    * Load a workflow by ID
    */
-  loadWorkflow(id: string): SavedWorkflow | null {
-    console.log('📂 [Workflow Storage] Loading workflow:', id);
+  async loadWorkflow(id: string): Promise<SavedWorkflow | null> {
+    console.log('📂 [Workflow Storage] Loading workflow with dual storage:', id);
     
-    // ENHANCED: Check localStorage directly first
-    const rawData = localStorage.getItem(this.STORAGE_KEY);
-    if (!rawData) {
-      console.error('❌ [Workflow Storage] No workflows found in localStorage');
-      return null;
+    let workflowData = null;
+    
+    // Try AppData first
+    const appDataAvailable = await this.isAppDataAvailable();
+    if (appDataAvailable) {
+      const appDataWorkflows = await this.loadFromAppData();
+      workflowData = appDataWorkflows[id];
+      
+      if (workflowData) {
+        console.log('📂 [AppData] Found workflow in AppData:', id);
+      }
     }
     
-    let directWorkflow;
-    try {
-      const allData = JSON.parse(rawData);
-      directWorkflow = allData[id];
-      console.log('🔍 [Direct Load] Raw workflow from localStorage:', {
-        found: !!directWorkflow,
-        hasSteps: directWorkflow ? Array.isArray(directWorkflow.steps) : false,
-        stepCount: directWorkflow?.steps?.length || 0,
-        keys: directWorkflow ? Object.keys(directWorkflow) : []
-      });
-    } catch (error) {
-      console.error('❌ [Direct Load] Failed to parse localStorage data:', error);
-      return null;
+    // Fallback to localStorage if not found in AppData
+    if (!workflowData) {
+      const localWorkflows = this.getLocalStorageWorkflows();
+      workflowData = localWorkflows[id];
+      
+      if (workflowData) {
+        console.log('📂 [localStorage] Found workflow in localStorage:', id);
+      }
     }
     
-    if (!directWorkflow) {
-      console.warn('❌ [Workflow Storage] Workflow not found in direct lookup:', id);
+    if (!workflowData) {
+      console.warn('❌ [Workflow Storage] Workflow not found in any storage:', id);
       return null;
     }
-    
-    // Use direct data instead of getAllWorkflows to avoid any processing
-    const workflowData = directWorkflow;
     
     console.log('📂 [Workflow Storage] Found workflow data:', {
       id: workflowData.id,
@@ -408,12 +554,31 @@ export class WorkflowStorageManager {
   /**
    * Delete a workflow
    */
-  deleteWorkflow(id: string): boolean {
-    const workflows = this.getAllWorkflows();
+  async deleteWorkflow(id: string): Promise<boolean> {
+    // Try to delete from AppData first
+    const appDataAvailable = await this.isAppDataAvailable();
+    if (appDataAvailable) {
+      try {
+        const response = await fetch(`${this.APPDATA_BASE_URL}/workflows/${id}`, {
+          method: 'DELETE'
+        });
+        
+        if (response.ok) {
+          console.log('🗑️ [AppData] Workflow deleted from AppData:', id);
+        } else {
+          console.warn('⚠️ [AppData] Delete failed, status:', response.status);
+        }
+      } catch (error) {
+        console.warn('⚠️ [AppData] Delete error:', error);
+      }
+    }
+    
+    // Always try to delete from localStorage as well
+    const workflows = await this.getAllWorkflows(true); // Skip migration during delete
     if (workflows[id]) {
       delete workflows[id];
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(workflows));
-      this.updateMetadataIndex();
+      await this.updateMetadataIndex();
       
       // CONSOLIDATION: Trigger store update
       this.triggerStoreUpdate();
@@ -426,22 +591,29 @@ export class WorkflowStorageManager {
   /**
    * Update an existing workflow
    */
-  updateWorkflow(
+  async updateWorkflow(
     id: string,
     updates: Partial<Pick<SavedWorkflow, 'name' | 'description' | 'steps' | 'tags'>>
-  ): boolean {
-    const workflows = this.getAllWorkflows();
+  ): Promise<boolean> {
+    const workflows = await this.getAllWorkflows(true); // Skip migration during update
     const workflow = workflows[id];
     
     if (!workflow) return false;
 
     // Update fields
     Object.assign(workflow, updates, {
-      dateModified: new Date()
+      dateModified: new Date().toISOString()
     });
 
+    // Try to save to AppData first
+    const appDataAvailable = await this.isAppDataAvailable();
+    if (appDataAvailable) {
+      await this.saveToAppData(workflow);
+    }
+
+    // Always save to localStorage as backup
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(workflows));
-    this.updateMetadataIndex();
+    await this.updateMetadataIndex();
     
     // CONSOLIDATION: Trigger store update
     this.triggerStoreUpdate();
@@ -452,22 +624,22 @@ export class WorkflowStorageManager {
   /**
    * Rename a workflow
    */
-  renameWorkflow(id: string, newName: string): boolean {
-    return this.updateWorkflow(id, { name: newName });
+  async renameWorkflow(id: string, newName: string): Promise<boolean> {
+    return await this.updateWorkflow(id, { name: newName });
   }
 
   /**
    * Export all workflows
    */
-  exportAllWorkflows(): string {
-    const workflows = this.getAllWorkflows();
+  async exportAllWorkflows(): Promise<string> {
+    const workflows = await this.getAllWorkflows();
     return JSON.stringify(workflows, null, 2);
   }
 
   /**
    * Import workflows from JSON
    */
-  importWorkflows(jsonData: string): { success: number; errors: string[] } {
+  async importWorkflows(jsonData: string): Promise<{ success: number; errors: string[] }> {
     try {
       const importedWorkflows = JSON.parse(jsonData);
       const errors: string[] = [];
@@ -483,7 +655,14 @@ export class WorkflowStorageManager {
             typedWorkflow.dateCreated = new Date(typedWorkflow.dateCreated);
             typedWorkflow.dateModified = new Date();
 
-            const workflows = this.getAllWorkflows();
+            // Try to save to AppData first
+            const appDataAvailable = await this.isAppDataAvailable();
+            if (appDataAvailable) {
+              await this.saveToAppData(typedWorkflow);
+            }
+
+            // Always save to localStorage as backup
+            const workflows = await this.getAllWorkflows(true); // Skip migration during import
             workflows[newId] = typedWorkflow;
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(workflows));
             success++;
@@ -496,7 +675,7 @@ export class WorkflowStorageManager {
       }
 
       if (success > 0) {
-        this.updateMetadataIndex();
+        await this.updateMetadataIndex();
         
         // CONSOLIDATION: Trigger store update
         this.triggerStoreUpdate();
@@ -525,21 +704,26 @@ export class WorkflowStorageManager {
   /**
    * Get storage usage statistics
    */
-  getStorageStats(): { 
+  async getStorageStats(): Promise<{ 
     workflowCount: number; 
     storageUsed: number; 
     storageAvailable: number;
-  } {
-    const workflows = this.getAllWorkflows();
+    storageLocation: 'AppData' | 'localStorage';
+  }> {
+    const workflows = await this.getAllWorkflows();
     const workflowCount = Object.keys(workflows).length;
     
     const data = localStorage.getItem(this.STORAGE_KEY) || '';
     const storageUsed = new Blob([data]).size;
     
+    // Check which storage is being used
+    const appDataAvailable = await this.isAppDataAvailable();
+    const storageLocation = appDataAvailable ? 'AppData' : 'localStorage';
+    
     // Estimate available storage (5MB typical localStorage limit)
     const storageAvailable = 5 * 1024 * 1024 - storageUsed;
 
-    return { workflowCount, storageUsed, storageAvailable };
+    return { workflowCount, storageUsed, storageAvailable, storageLocation };
   }
 
   /**
@@ -551,62 +735,32 @@ export class WorkflowStorageManager {
     localStorage.removeItem(this.METADATA_KEY);
   }
 
-  private getAllWorkflows(skipMigration: boolean = false): Record<string, any> {
-    try {
-      const data = localStorage.getItem(this.STORAGE_KEY);
-      if (!data) return {};
-      
-      const parsed = JSON.parse(data);
-      console.log('🔍 [Storage Debug] Raw localStorage format:', Array.isArray(parsed) ? 'Array' : 'Object', 'skipMigration:', skipMigration);
-      
-      // Handle legacy array format or corrupted data (only if not during save)
-      let workflows: Record<string, any>;
-      if (Array.isArray(parsed) && !skipMigration) {
-        console.log('🔧 [Storage Migration] Converting array format to object format');
-        // Convert array to object format
-        workflows = {};
-        for (const workflow of parsed) {
-          if (workflow && workflow.id) {
-            workflows[workflow.id] = workflow;
-          }
-        }
-        // Save in correct format
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(workflows));
-        console.log('🔧 [Storage Migration] Converted', Object.keys(workflows).length, 'workflows to object format');
-      } else if (Array.isArray(parsed) && skipMigration) {
-        // During save, treat array as empty to avoid corruption
-        console.log('🔧 [Storage] Skipping migration during save process');
-        workflows = {};
-      } else if (typeof parsed === 'object' && parsed !== null) {
-        workflows = parsed;
-      } else {
-        console.warn('❌ [Storage] Invalid data format, resetting to empty');
-        workflows = {};
+  private async getAllWorkflows(skipMigration: boolean = false): Promise<Record<string, any>> {
+    // Check if migration is needed and not skipped
+    if (!skipMigration && !localStorage.getItem('comfyweb_appdata_migrated')) {
+      const appDataAvailable = await this.isAppDataAvailable();
+      if (appDataAvailable) {
+        await this.migrateToAppData();
       }
-      
-      // Clean up any workflows with basic structural issues only
-      // Don't validate steps content here - that happens during load with deserialization
-      const cleanedWorkflows: Record<string, any> = {};
-      for (const [id, workflow] of Object.entries(workflows)) {
-        if (this.validateBasicStructure(workflow)) {
-          cleanedWorkflows[id] = workflow;
-        } else {
-          console.warn('🧹 [Workflow Storage] Removing workflow with basic structural issues:', id, workflow);
-        }
-      }
-      
-      // If we cleaned anything, save the cleaned version (but not during save process)
-      if (!skipMigration && Object.keys(cleanedWorkflows).length !== Object.keys(workflows).length) {
-        console.log('🧹 [Workflow Storage] Cleaned', Object.keys(workflows).length - Object.keys(cleanedWorkflows).length, 'workflows with structural issues');
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(cleanedWorkflows));
-      }
-      
-      console.log('📋 [Storage Debug] Final workflows object keys:', Object.keys(cleanedWorkflows));
-      return cleanedWorkflows;
-    } catch (error) {
-      console.error('Failed to load workflows from localStorage:', error);
-      return {};
     }
+    
+    // Try AppData first
+    const appDataAvailable = await this.isAppDataAvailable();
+    if (appDataAvailable) {
+      const appDataWorkflows = await this.loadFromAppData();
+      if (Object.keys(appDataWorkflows).length > 0) {
+        console.log('📂 [AppData] Using AppData as primary storage');
+        return appDataWorkflows;
+      }
+    }
+    
+    // Fallback to localStorage
+    console.log('📂 [localStorage] Using localStorage as primary storage');
+    return this.getLocalStorageWorkflows();
+  }
+
+  private getLocalStorageWorkflowsLegacy(): Record<string, any> {
+    return this.getLocalStorageWorkflows();
   }
 
   /**
@@ -631,8 +785,8 @@ export class WorkflowStorageManager {
     return isValid;
   }
 
-  private updateMetadataIndex(): void {
-    const workflows = this.getAllWorkflows(true); // Skip migration during metadata update
+  private async updateMetadataIndex(): Promise<void> {
+    const workflows = await this.getAllWorkflows(true); // Skip migration during metadata update
     console.log('🔍 [Metadata Debug] getAllWorkflows returned:', Object.keys(workflows).length, 'workflows');
     console.log('🔍 [Metadata Debug] Sample workflow keys:', Object.keys(workflows)[0] ? Object.keys(Object.values(workflows)[0]) : 'none');
     
