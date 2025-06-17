@@ -34,6 +34,7 @@
         importWorkflows: Event;
         showError: string;
         refreshSavedWorkflows: void;
+        clearWorkspace: void;
     }>();
 
     let fileInput: HTMLInputElement;
@@ -143,7 +144,7 @@
     }
 </script>
 
-<div class="w-[568px] h-full flex flex-col border-r-2 border-zinc-700">
+<div class="w-[644px] h-full flex flex-col border-r-2 border-zinc-700">
     <!-- ComfyWeb v2 Header -->
     <div class="bg-gradient-to-r from-purple-900 to-blue-900 px-4 py-3 border-b border-zinc-700">
         <div class="flex items-center justify-between">
@@ -218,6 +219,18 @@
                 >
                     Import Workflows
                 </Button>
+
+                <h2 class="mt-4">Workspace</h2>
+                <Button
+                    color="red"
+                    size="sm"
+                    on:click={() => dispatch("clearWorkspace")}
+                    disabled={workflow.length === 0}
+                    class="bg-red-600 hover:bg-red-700 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200"
+                >
+                    Clear Workspace
+                </Button>
+                <p class="text-xs text-gray-500 mt-1">Remove all workflow steps to start fresh</p>
 
                 <h2 class="mt-4">Settings</h2>
                 <Label for="url">ComfyUI server host</Label>

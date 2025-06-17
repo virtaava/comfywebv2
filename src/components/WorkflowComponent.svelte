@@ -98,22 +98,32 @@
 </script>
 
 {#if items.length === 0}
-    <div class="mx-4 my-4 text-center text-xs text-zinc-600">
-        You can drag an image or a workflow generated with ComfyUI on the page
-        to get started. You can also load a template by clicking 'Add' ->
-        'Workflow Template' and then picking something from the list.
+    <!-- Enhanced Empty State -->
+    <div class="mx-4 my-8 text-center p-8 bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-xl border-2 border-dashed border-gray-600/60">
+        <div class="text-gray-400 mb-4">
+            <svg class="w-16 h-16 mx-auto mb-4 opacity-60" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-white mb-3">No Workflow Steps</h3>
+        <div class="text-sm text-gray-400 space-y-2">
+            <p>Get started by:</p>
+            <div class="flex flex-col gap-1 text-xs">
+                <span>• Drag & drop a ComfyUI workflow or image</span>
+                <span>• Click <strong>Add → Workflow Template</strong></span>
+                <span>• Click <strong>Add → Node Type</strong> to build manually</span>
+            </div>
+        </div>
     </div>
 {:else}
     <section
+        class="space-y-2 p-2"
         use:dndzone={{ items, flipDurationMs }}
         on:consider={(ev) => handleUpdate(ev.detail.items)}
         on:finalize={(ev) => handleUpdate(ev.detail.items)}
     >
         {#each items as item, idx (item.id)}
-            <div
-                class="border-zinc-700 last:border-b-2"
-                animate:flip={{ duration: flipDurationMs }}
-            >
+            <div animate:flip={{ duration: flipDurationMs }}>
                 <WorkflowStepComponent
                     {...createStepProps(item.step, library)}
                     bind:expanded={item.expanded}

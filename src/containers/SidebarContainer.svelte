@@ -197,6 +197,12 @@
         errorMessage.set(error);
     }
 
+    function handleClearWorkspace() {
+        workflow.set([]);
+        infoMessage.set("Workspace cleared successfully");
+        console.log('🧹 [Workspace] Workflow cleared by user');
+    }
+
     function performControlAfterGenerate(step: WorkflowStep) {
         if (WorkflowStep.isNode(step)) {
             if (
@@ -265,6 +271,7 @@
     on:importWorkflows={(ev) => handleImportWorkflows(ev.detail)}
     on:showError={(ev) => handleShowError(ev.detail)}
     on:refreshSavedWorkflows={refreshSavedWorkflows}
+    on:clearWorkspace={handleClearWorkspace}
 />
 
 <!-- SaveWorkflowDialog enabled with simple version -->
