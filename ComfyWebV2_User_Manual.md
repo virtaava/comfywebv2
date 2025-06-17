@@ -2,12 +2,12 @@
 
 Welcome to **ComfyWeb V2** – a form-based interface for AI image generation, powered by ComfyUI but designed for intuitive workflow management.
 
-![ComfyWeb v2 Interface](docs/Screenshot%202025-06-17%20105442.png)
+![ComfyWeb v2 Interface](docs/images/Workspace_Empty.png)
 *Card-based workflow interface with sequential execution*
 
 ## 🔍 **Image Viewer with Metadata Access**
 
-![Image Viewer with Metadata](docs/ImageViewerwithmetadata.png)
+![Image Viewer with Metadata](docs/images/ImageViewerwithmetadata.png)
 *Complete metadata access with seed copying, parameter viewing, and zoom controls*
 
 The **Image Viewer** provides comprehensive image inspection tools for analyzing generated results. View complete generation parameters, copy seeds for reproducible results, and inspect images with professional zoom and pan controls.
@@ -37,7 +37,7 @@ When you select a **template**, ComfyWeb V2 displays it as a **stack of cards** 
 
 ComfyWeb V2 includes **14 templates** organized across **5 categories**:
 
-![Template Organization](docs/Screenshot%202025-06-17%20105330.png)
+![Template Organization](docs/images/Available_template_categories.png)
 *Template organization across 5 categories*
 
 ### 📸 **Text to Image** (3 templates)
@@ -86,7 +86,7 @@ ComfyWeb V2 features a **session-persistent gallery** that automatically collect
 
 ## 🛠️ **Workflow Management**
 
-![Manage Tab](docs/Manage_tab_025-06-17%20110743.png)
+![Manage Tab](docs/images/Manage_tab_025-06-17%20110743.png)
 *Workflow management interface*
 
 ### **Management Features**
@@ -106,6 +106,9 @@ Think of **"My Workflows"** as your personal collection of configurations:
 ---
 
 ## 🧱 Workflow Components: Card Overview
+
+![Available Nodes](docs/images/Showing%20what%20nodes%20are%20available.png)
+*Available workflow components and node types*
 
 Each **card** represents one processing node in ComfyUI. Here are the essential components:
 
@@ -171,7 +174,7 @@ Each **card** represents one processing node in ComfyUI. Here are the essential 
 
 ## ⚡ **Generation Monitoring**
 
-![Generation Monitoring](docs/Screenshot%202025-06-17%20105501.png)
+![Generation Monitoring](docs/images/Workspace_with_image_generation_in_Progress.png)
 *Real-time generation tracking*
 
 ComfyWeb v2 provides comprehensive generation monitoring:

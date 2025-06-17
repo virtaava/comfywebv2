@@ -8,7 +8,7 @@
 
 ## 🔍 **Image Viewer with Metadata Access**
 
-![ComfyWeb v2 Image Viewer](docs/ImageViewerwithmetadata.png)
+![ComfyWeb v2 Image Viewer](docs/images/ImageViewerwithmetadata.png)
 *Complete metadata access with seed copying, parameter viewing, and zoom controls*
 
 ### **Image Inspection Features**
@@ -25,7 +25,7 @@
 
 ComfyWeb v2 transforms ComfyUI's node-graph system into a form-based workflow interface. Instead of connecting nodes, users work with simple forms and templates to create AI images.
 
-![Card Workflow](docs/Screenshot%202025-06-17%20105442.png)
+![Card Workflow](docs/images/Workspace_Empty.png)
 *Node-graphs become configurable cards executed sequentially*
 
 ComfyWeb v2 builds upon the original [ComfyWeb](https://github.com/jac3km4/comfyweb) by [@jac3km4](https://github.com/jac3km4), adding enhanced features and tools for AI image generation workflows.
@@ -34,7 +34,7 @@ ComfyWeb v2 builds upon the original [ComfyWeb](https://github.com/jac3km4/comfy
 
 ## 📚 **Template Library**
 
-![Template Categories](docs/Screenshot%202025-06-17%20105330.png)
+![Template Categories](docs/images/Available_template_categories.png)
 *14 templates organized across 5 categories*
 
 ### **Available Templates:**
@@ -50,7 +50,7 @@ Each template includes optimized settings, time estimates, and difficulty indica
 
 ## ⚡ **Generation Monitoring**
 
-![Generation Process](docs/Screenshot%202025-06-17%20105501.png)
+![Generation Process](docs/images/Workspace_with_image_generation_in_Progress.png)
 *Real-time generation tracking with progress monitoring*
 
 ### **Generation Features:**
@@ -64,7 +64,7 @@ Each template includes optimized settings, time estimates, and difficulty indica
 
 ## 🛠️ **Workflow Management**
 
-![Manage Tab](docs/Manage_tab_025-06-17%20110743.png)
+![Manage Tab](docs/images/Manage_tab_025-06-17%20110743.png)
 *Comprehensive workflow management tools*
 
 ### **Management Features:**
