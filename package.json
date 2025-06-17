@@ -30,7 +30,10 @@
     "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p tsconfig.node.json",
     "type-check": "svelte-check --tsconfig ./tsconfig.json",
     "deploy": "npm run build:gh-pages && npx gh-pages -d dist",
-    "analyze:dead-code": "node scripts/analyze-dead-code.cjs"
+    "analyze:dead-code": "node scripts/analyze-dead-code.cjs",
+"ai-session-init": "node scripts/ai-session-init.cjs",
+  "ai-session-close": "node scripts/ai-session-close.cjs",
+"ai-session-resume": "node scripts/ai-session-resume.cjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",

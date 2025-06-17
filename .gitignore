@@ -18,12 +18,24 @@ dist-ssr
 # Development folders (not for repository)
 backups/
 Archive/
+backup-before-clean/
 build-and-deploy*.bat
 build-and-deploy*.sh
 install-*.sh
 install-*.bat
 test-templates.*
 vite.config.simple-test.ts
+# Claude AI session logs
+/ai-sessions/
+/SESSION_STATE.json
+
+# Local Claude automation scripts
+/scripts/ai-session-init.cjs
+/scripts/ai-session-close.cjs
+/scripts/ai-session-resume.cjs
+
+# Claude resume artifacts
+**/resume.prompt.md
 
 # Project management files (not for repository)
 DEVELOPMENT_PROTOCOL.md
