@@ -28,11 +28,18 @@ vite.config.simple-test.ts
 # Claude AI session logs
 /ai-sessions/
 /SESSION_STATE.json
+# Claude AI Command Bridge
+claude-command.txt
+claude-output.txt
+command-output.txt
+
 
 # Local Claude automation scripts
 /scripts/ai-session-init.cjs
 /scripts/ai-session-close.cjs
 /scripts/ai-session-resume.cjs
+/scripts/command-bridge.cjs
+/scripts/launch-bridge.bat
 
 # Claude resume artifacts
 **/resume.prompt.md
