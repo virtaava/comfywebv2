@@ -11,6 +11,20 @@ export default defineConfig(({ command }) => {
     build: {
       outDir: 'dist',
       emptyOutDir: true,
+    },
+    server: {
+      // Enable CORS for development
+      cors: true,
+      // Configure for local API development  
+      host: true,
+      port: 5173
+    },
+    // Enable Node.js modules compatibility
+    define: {
+      global: 'globalThis',
+    },
+    optimizeDeps: {
+      include: ['@types/node']
     }
   };
 });

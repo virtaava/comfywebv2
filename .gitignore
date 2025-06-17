@@ -37,6 +37,12 @@ PRODUCTION_CHANGES_LOG.md
 COMMUNITY_FEEDBACK_LOG.md
 PROJECT_TRACKER_PHASE1_LEGACY.md
 
+# Auto-generated analysis reports
+analysis-results/
+
+# Optional dev scripts (uncomment to ignore)
+scripts/analyze-dead-code.cjs
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
